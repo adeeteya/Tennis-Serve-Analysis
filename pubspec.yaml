@@ -42,6 +42,7 @@ dependencies:
       url: https://github.com/filofan1/tflite_flutter_helper.git
       ref: 783f15e5a87126159147d8ea30b98eea9207ac70
   lottie: ^2.3.0
+  flutter_svg: ^2.0.4
 
 
 dev_dependencies:
@@ -68,7 +69,7 @@ flutter:
 
   assets:
    - assets/
-   - assets/videos/
+   - assets/images/
    - assets/models/
    - assets/lottie/
 

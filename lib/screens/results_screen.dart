@@ -168,7 +168,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Results Screen"),
+        title: const Text("Serve Analysis Result"),
       ),
       body: (isLoading)
           ? Center(

@@ -78,7 +78,7 @@ class _PreviewScreenState extends State<PreviewScreen>
           IconButton(
             tooltip: "Continue",
             onPressed: () {
-              Navigator.of(context).push(
+              Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
                   builder: (context) =>
                       ResultsScreen(pickedVideo: widget.pickedVideo),
