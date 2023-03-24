@@ -27,7 +27,7 @@ class Classifier {
   void printDebugData() {
     debugPrint(
         "Frame: $frameNo time: ${s.elapsedMilliseconds} type: ${inputImage.dataType} height: ${inputImage.height} width: ${inputImage.width}");
-    printWrapped(parseLandmarkData().toString());
+    // printWrapped(parseLandmarkData().toString());
   }
 
   void printWrapped(String text) {
@@ -111,7 +111,7 @@ class Classifier {
     }
     outputParsed = result;
 
-    printWrapped(outputParsed.toString());
+    // printWrapped(outputParsed.toString());
 
     return result;
   }

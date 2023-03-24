@@ -29,7 +29,7 @@ class IsolateUtils {
     await for (final IsolateData isolateData in port) {
       Classifier classifier = Classifier(
           interpreter: Interpreter.fromAddress(isolateData.interpreterAddress));
-      classifier.performOperations(isolateData.cameraImage);
+      classifier.performOperations(isolateData.imageData);
       classifier.runModel();
       List<dynamic> results = classifier.parseLandmarkData();
       isolateData.responsePort.send(results);
@@ -37,11 +37,10 @@ class IsolateUtils {
   }
 }
 
-/// Bundles data to pass between Isolate
 class IsolateData {
-  image_lib.Image cameraImage;
+  image_lib.Image imageData;
   int interpreterAddress;
   late SendPort responsePort;
 
-  IsolateData(this.cameraImage, this.interpreterAddress);
+  IsolateData(this.imageData, this.interpreterAddress);
 }

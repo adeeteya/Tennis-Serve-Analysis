@@ -28,6 +28,9 @@ class _ResultsScreenState extends State<ResultsScreen> {
   double videoDuration = 60.19;
   int numberOfImages = 0;
   String outputPath = "";
+  double avgShoulderAngle = 0;
+  double avgKneeAngle = 0;
+  double avgElbowAngle = 0;
 
   late final Classifier classifier;
   late final IsolateUtils isolate;
@@ -142,17 +145,30 @@ class _ResultsScreenState extends State<ResultsScreen> {
       isLoading = true;
     });
     image_lib.Image tmpImage;
+    double shoulderAngleSum = 0;
+    double kneeAngleSum = 0;
+    double elbowAngleSum = 0;
     for (int i = 0; i < numberOfImages; i++) {
       tmpImage = image_lib.decodeJpg(File(imagePath(i + 1)).readAsBytesSync())!;
       var isolateData = IsolateData(tmpImage, classifier.interpreter.address);
       List<dynamic> inferenceResults = await inference(isolateData);
-      List<int> pointA = [inferenceResults[7][0], inferenceResults[7][1]];
-      List<int> pointB = [inferenceResults[5][0], inferenceResults[5][1]];
-      List<int> pointC = [inferenceResults[11][0], inferenceResults[11][1]];
-      double testAngle = getAngle(pointA, pointB, pointC);
-      debugPrint("test_angle=$testAngle");
+      List<int> shoulder = [inferenceResults[6][0], inferenceResults[6][1]];
+      List<int> elbow = [inferenceResults[8][0], inferenceResults[8][1]];
+      List<int> wrist = [inferenceResults[10][0], inferenceResults[10][1]];
+      List<int> hip = [inferenceResults[12][0], inferenceResults[12][1]];
+      List<int> knee = [inferenceResults[14][0], inferenceResults[14][1]];
+      List<int> ankle = [inferenceResults[16][0], inferenceResults[16][1]];
+      double shoulderAngle = getAngle(elbow, shoulder, hip);
+      double kneeAngle = getAngle(hip, knee, ankle);
+      double elbowAngle = getAngle(wrist, elbow, shoulder);
+      shoulderAngleSum += shoulderAngle;
+      kneeAngleSum += kneeAngle;
+      elbowAngleSum += elbowAngle;
     }
     setState(() {
+      avgShoulderAngle = shoulderAngleSum / numberOfImages;
+      avgKneeAngle = kneeAngleSum / numberOfImages;
+      avgElbowAngle = elbowAngleSum / numberOfImages;
       isLoading = false;
     });
   }
@@ -190,16 +206,41 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ],
               ),
             )
-          : GridView.builder(
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                childAspectRatio: 0.5,
-              ),
-              itemCount: numberOfImages,
-              itemBuilder: (context, index) => Image.file(
-                File(imagePath(index + 1)),
-                fit: BoxFit.cover,
-              ),
+          : Column(
+              children: [
+                Text(
+                  "Average Knee Angle= ${avgKneeAngle.toStringAsFixed(2)}°",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "Average Elbow Angle= ${avgElbowAngle.toStringAsFixed(2)}°",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "Average Shoulder Angle= ${avgShoulderAngle.toStringAsFixed(2)}°",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.w500),
+                ),
+                const Divider(height: 20),
+                Expanded(
+                  child: GridView.builder(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3,
+                      childAspectRatio: 0.5,
+                    ),
+                    itemCount: numberOfImages,
+                    itemBuilder: (context, index) => Image.file(
+                      File(imagePath(index + 1)),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                ),
+              ],
             ),
     );
   }
@@ -208,7 +249,10 @@ class _ResultsScreenState extends State<ResultsScreen> {
 class RenderLandmarks extends CustomPainter {
   late List<dynamic> inferenceList;
   late PointMode pointMode;
-  late List<dynamic> selectedLandmarks;
+
+  RenderLandmarks(List<dynamic> inferences) {
+    inferenceList = inferences;
+  }
 
   final greenPoint = Paint()
     ..color = Colors.green
@@ -254,11 +298,6 @@ class RenderLandmarks extends CustomPainter {
     [14, 16] // right_knee to right_ankle
   ];
 
-  RenderLandmarks(List<dynamic> inferences, List<dynamic> included) {
-    inferenceList = inferences;
-    selectedLandmarks = included;
-  }
-
   @override
   void paint(Canvas canvas, Size size) {
     // for (List<int> edge in edges) {
@@ -270,9 +309,10 @@ class RenderLandmarks extends CustomPainter {
     //       Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y), edge_paint);
     // }
 
-    for (var limb in selectedLandmarks) {
-      renderEdge(canvas, limb[0], limb[1]);
-    }
+    // for (var limb in selectedLandmarks) {
+    //   renderEdge(canvas, limb[0], limb[1]);
+    // }
+
     canvas.drawPoints(PointMode.points, pointsGreen, greenPoint);
     canvas.drawPoints(PointMode.points, pointsRed, redPoint);
   }
