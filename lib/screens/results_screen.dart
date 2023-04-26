@@ -75,23 +75,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
     );
   }
 
-  double getFFmpegProgress(String ffmpegLogs, num videoDurationInSec) {
-    final regex = RegExp("(?<=time=)[\\d:.]*");
-    final match = regex.firstMatch(ffmpegLogs);
-    if (match != null) {
-      final matchSplit = match.group(0).toString().split(":");
-      if (videoDurationInSec != 0) {
-        final progress = (int.parse(matchSplit[0]) * 3600 +
-                int.parse(matchSplit[1]) * 60 +
-                double.parse(matchSplit[2])) /
-            videoDurationInSec;
-        double showProgress = (progress * 100);
-        return showProgress;
-      }
-    }
-    return 0;
-  }
-
   Future<void> saveVideoInImages(File selectedVideo) async {
     //delay to get duration
     await Future.delayed(const Duration(milliseconds: 500), () {});
@@ -109,13 +92,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
         await createIsolates();
       } else {
         debugPrint("FFmpeg processing failed.");
-      }
-    }, (logs) {
-      final progress = getFFmpegProgress(logs.getMessage(), videoDuration);
-      if (progress != 0) {
-        setState(() {
-          progressValue = progress;
-        });
       }
     });
   }

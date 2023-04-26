@@ -15,8 +15,6 @@ class Classifier {
   Map<int, Object> outputs = {};
   TensorBuffer outputLocations = TensorBufferFloat([]);
 
-  Stopwatch s = Stopwatch();
-
   int frameNo = 0;
 
   Classifier({Interpreter? interpreter}) {
@@ -25,7 +23,7 @@ class Classifier {
 
   void printDebugData() {
     debugPrint(
-        "Frame: $frameNo time: ${s.elapsedMilliseconds} type: ${inputImage.dataType} height: ${inputImage.height} width: ${inputImage.width}");
+        "Frame: $frameNo type: ${inputImage.dataType} height: ${inputImage.height} width: ${inputImage.width}");
     // printWrapped(parseLandmarkData().toString());
   }
 
@@ -35,7 +33,7 @@ class Classifier {
   }
 
   void performOperations(image_lib.Image image) {
-    s.start();
+    //use this in case of camera
     // if (Platform.isAndroid) {
     //   image = image_lib.copyRotate(image, 270);
     //   image = image_lib.flipHorizontal(image);
@@ -44,17 +42,13 @@ class Classifier {
     inputImage.loadImage(image);
     inputImage = getProcessedImage();
     inputs = [inputImage.buffer];
-    s.stop();
-    frameNo += 1;
-    // printDebugData();
-    s.reset();
   }
 
   TensorImage getProcessedImage() {
     int padSize = max(inputImage.height, inputImage.width);
     imageProcessor = ImageProcessorBuilder()
         .add(ResizeWithCropOrPadOp(padSize, padSize))
-        .add(ResizeOp(192, 192, ResizeMethod.BILINEAR))
+        .add(ResizeOp(256, 256, ResizeMethod.BILINEAR))
         .build();
 
     inputImage = imageProcessor.process(inputImage);
