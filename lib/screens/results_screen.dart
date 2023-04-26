@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
-import 'dart:ui';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as image_lib;
 import 'package:tennis_serve_analysis/utility/classifier.dart';
 import 'package:tennis_serve_analysis/utility/isolate_utils.dart';
+import 'package:tennis_serve_analysis/widgets/serve_visualizer.dart';
 
 class ResultsScreen extends StatefulWidget {
   final XFile pickedVideo;
@@ -31,6 +32,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   double avgShoulderAngle = 0;
   double avgKneeAngle = 0;
   double avgElbowAngle = 0;
+  List completeInferenceResults = [];
 
   late final Classifier classifier;
   late final IsolateUtils isolate;
@@ -93,7 +95,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   Future<void> saveVideoInImages(File selectedVideo) async {
     //delay to get duration
     await Future.delayed(const Duration(milliseconds: 500), () {});
-    outputPath = (await getApplicationDocumentsDirectory()).path;
+    outputPath = (await getTemporaryDirectory()).path;
     String command =
         "-i ${selectedVideo.path} -vf fps=20 $outputPath/image_%03d.jpg";
     FFmpegKit.executeAsync(command, (session) async {
@@ -118,16 +120,6 @@ class _ResultsScreenState extends State<ResultsScreen> {
     });
   }
 
-  String imagePath(int index) {
-    if (index < 10) {
-      return "$outputPath/image_00$index.jpg";
-    } else if (index >= 10 && index <= 99) {
-      return "$outputPath/image_0$index.jpg";
-    } else {
-      return "$outputPath/image_$index.jpg";
-    }
-  }
-
   double getAngle(List<int> pointA, List<int> pointB, List<int> pointC) {
     double radians = atan2(pointC[1] - pointB[1], pointC[0] - pointB[0]) -
         atan2(pointA[1] - pointB[1], pointA[0] - pointB[0]);
@@ -138,6 +130,16 @@ class _ResultsScreenState extends State<ResultsScreen> {
     }
 
     return angle;
+  }
+
+  String imagePath(int index) {
+    if (index < 10) {
+      return "$outputPath/image_00$index.jpg";
+    } else if (index >= 10 && index <= 99) {
+      return "$outputPath/image_0$index.jpg";
+    } else {
+      return "$outputPath/image_$index.jpg";
+    }
   }
 
   Future createIsolates() async {
@@ -151,7 +153,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     for (int i = 0; i < numberOfImages; i++) {
       tmpImage = image_lib.decodeJpg(File(imagePath(i + 1)).readAsBytesSync())!;
       var isolateData = IsolateData(tmpImage, classifier.interpreter.address);
-      List<dynamic> inferenceResults = await inference(isolateData);
+      List inferenceResults = await inference(isolateData);
       List<int> shoulder = [inferenceResults[6][0], inferenceResults[6][1]];
       List<int> elbow = [inferenceResults[8][0], inferenceResults[8][1]];
       List<int> wrist = [inferenceResults[10][0], inferenceResults[10][1]];
@@ -164,6 +166,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
       shoulderAngleSum += shoulderAngle;
       kneeAngleSum += kneeAngle;
       elbowAngleSum += elbowAngle;
+      completeInferenceResults.add(inferenceResults);
     }
     setState(() {
       avgShoulderAngle = shoulderAngleSum / numberOfImages;
@@ -206,140 +209,95 @@ class _ResultsScreenState extends State<ResultsScreen> {
                 ],
               ),
             )
-          : Column(
-              children: [
-                Text(
-                  "Average Knee Angle= ${avgKneeAngle.toStringAsFixed(2)}°",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  "Average Elbow Angle= ${avgElbowAngle.toStringAsFixed(2)}°",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                const SizedBox(height: 5),
-                Text(
-                  "Average Shoulder Angle= ${avgShoulderAngle.toStringAsFixed(2)}°",
-                  style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.w500),
-                ),
-                const Divider(height: 20),
-                Expanded(
-                  child: GridView.builder(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3,
-                      childAspectRatio: 0.5,
+          : SingleChildScrollView(
+              child: SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    UserServeVisualizer(points: completeInferenceResults),
+                    const Divider(height: 20),
+                    Text(
+                      "Average Knee Angle= ${avgKneeAngle.toStringAsFixed(2)}°",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                    itemCount: numberOfImages,
-                    itemBuilder: (context, index) => Image.file(
-                      File(imagePath(index + 1)),
-                      fit: BoxFit.cover,
+                    const SizedBox(height: 5),
+                    Text(
+                      "Average Elbow Angle= ${avgElbowAngle.toStringAsFixed(2)}°",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
-                  ),
+                    const SizedBox(height: 5),
+                    Text(
+                      "Average Shoulder Angle= ${avgShoulderAngle.toStringAsFixed(2)}°",
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
     );
   }
 }
 
-class RenderLandmarks extends CustomPainter {
-  late List<dynamic> inferenceList;
-  late PointMode pointMode;
-
-  RenderLandmarks(List<dynamic> inferences) {
-    inferenceList = inferences;
-  }
-
-  final greenPoint = Paint()
-    ..color = Colors.green
-    ..strokeCap = StrokeCap.round
-    ..strokeWidth = 8;
-
-  final greenEdge = Paint()
-    ..color = Colors.lightGreen
-    ..strokeWidth = 5;
-
-  // Overlay Profile
-
-  final redPoint = Paint()
-    ..color = Colors.red
-    ..strokeCap = StrokeCap.round
-    ..strokeWidth = 8;
-
-  final redEdge = Paint()
-    ..color = Colors.orange
-    ..strokeWidth = 5;
-
-  List<Offset> pointsGreen = [];
-  List<Offset> pointsRed = [];
-
-  List<dynamic> edges = [
-    [0, 1], // nose to left_eye
-    [0, 2], // nose to right_eye
-    [1, 3], // left_eye to left_ear
-    [2, 4], // right_eye to right_ear
-    [0, 5], // nose to left_shoulder
-    [0, 6], // nose to right_shoulder
-    [5, 7], // left_shoulder to left_elbow
-    [7, 9], // left_elbow to left_wrist
-    [6, 8], // right_shoulder to right_elbow
-    [8, 10], // right_elbow to right_wrist
-    [5, 6], // left_shoulder to right_shoulder
-    [5, 11], // left_shoulder to left_hip
-    [6, 12], // right_shoulder to right_hip
-    [11, 12], // left_hip to right_hip
-    [11, 13], // left_hip to left_knee
-    [13, 15], // left_knee to left_ankle
-    [12, 14], // right_hip to right_knee
-    [14, 16] // right_knee to right_ankle
-  ];
+class ImageVisualizer extends StatefulWidget {
+  final String outputPath;
+  final int numberOfImages;
+  const ImageVisualizer(
+      {Key? key, required this.outputPath, required this.numberOfImages})
+      : super(key: key);
 
   @override
-  void paint(Canvas canvas, Size size) {
-    // for (List<int> edge in edges) {
-    //   double vertex1X = inferenceList[edge[0]][0].toDouble() - 70;
-    //   double vertex1Y = inferenceList[edge[0]][1].toDouble() - 30;
-    //   double vertex2X = inferenceList[edge[1]][0].toDouble() - 70;
-    //   double vertex2Y = inferenceList[edge[1]][1].toDouble() - 30;
-    //   canvas.drawLine(
-    //       Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y), edge_paint);
-    // }
+  State<ImageVisualizer> createState() => _ImageVisualizerState();
+}
 
-    // for (var limb in selectedLandmarks) {
-    //   renderEdge(canvas, limb[0], limb[1]);
-    // }
+class _ImageVisualizerState extends State<ImageVisualizer> {
+  int currentIndex = 0;
+  late final Timer timer;
 
-    canvas.drawPoints(PointMode.points, pointsGreen, greenPoint);
-    canvas.drawPoints(PointMode.points, pointsRed, redPoint);
+  String imagePath(int index) {
+    if (index < 10) {
+      return "${widget.outputPath}/image_00$index.jpg";
+    } else if (index >= 10 && index <= 99) {
+      return "${widget.outputPath}/image_0$index.jpg";
+    } else {
+      return "${widget.outputPath}/image_$index.jpg";
+    }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  void initState() {
+    //50ms because 20frames per second
+    timer = Timer.periodic(const Duration(milliseconds: 50), (_) {
+      setState(() {
+        if (currentIndex == widget.numberOfImages - 1) {
+          currentIndex = 0;
+        } else {
+          currentIndex++;
+        }
+      });
+    });
+    super.initState();
+  }
 
-  void renderEdge(Canvas canvas, List<int> included, bool isCorrect) {
-    for (List<dynamic> point in inferenceList) {
-      if ((point[2] > 0.40) & included.contains(inferenceList.indexOf(point))) {
-        isCorrect
-            ? pointsGreen
-                .add(Offset(point[0].toDouble() - 70, point[1].toDouble() - 30))
-            : pointsRed.add(
-                Offset(point[0].toDouble() - 70, point[1].toDouble() - 30));
-      }
-    }
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
+  }
 
-    for (List<int> edge in edges) {
-      if (included.contains(edge[0]) & included.contains(edge[1])) {
-        double vertex1X = inferenceList[edge[0]][0].toDouble() - 70;
-        double vertex1Y = inferenceList[edge[0]][1].toDouble() - 30;
-        double vertex2X = inferenceList[edge[1]][0].toDouble() - 70;
-        double vertex2Y = inferenceList[edge[1]][1].toDouble() - 30;
-        canvas.drawLine(Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y),
-            isCorrect ? greenEdge : redEdge);
-      }
-    }
+  @override
+  Widget build(BuildContext context) {
+    return Image.file(
+      File(imagePath(currentIndex)),
+      fit: BoxFit.cover,
+    );
   }
 }

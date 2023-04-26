@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: '>=2.19.2 <3.0.0'
+  sdk: '>=2.19.6 <3.0.0'
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -31,18 +31,18 @@ dependencies:
   flutter:
     sdk: flutter
 
-  image_picker: ^0.8.7
-  video_player: ^2.6.0
+  image_picker: ^0.8.7+4
+  video_player: ^2.6.1
   ffmpeg_kit_flutter: ^5.1.0
   path_provider: ^2.0.14
   image: ^3.3.0
-  tflite_flutter: ^0.9.0
+  tflite_flutter: ^0.9.1
   tflite_flutter_helper:
     git:
       url: https://github.com/filofan1/tflite_flutter_helper.git
       ref: 783f15e5a87126159147d8ea30b98eea9207ac70
-  lottie: ^2.3.0
-  flutter_svg: ^2.0.4
+  lottie: ^2.3.2
+  flutter_svg: ^2.0.5
 
 
 dev_dependencies:

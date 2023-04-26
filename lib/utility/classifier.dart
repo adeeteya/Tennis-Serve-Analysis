@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as image_lib;
@@ -37,10 +36,10 @@ class Classifier {
 
   void performOperations(image_lib.Image image) {
     s.start();
-    if (Platform.isAndroid) {
-      image = image_lib.copyRotate(image, 270);
-      image = image_lib.flipHorizontal(image);
-    }
+    // if (Platform.isAndroid) {
+    //   image = image_lib.copyRotate(image, 270);
+    //   image = image_lib.flipHorizontal(image);
+    // }
     inputImage = TensorImage(TfLiteType.float32);
     inputImage.loadImage(image);
     inputImage = getProcessedImage();
@@ -97,7 +96,6 @@ class Classifier {
   }
 
   List parseLandmarkData() {
-    List outputParsed = [];
     List<double> data = outputLocations.getDoubleList();
     List result = [];
     int x, y;
@@ -109,7 +107,6 @@ class Classifier {
       c = (data[2 + i]);
       result.add([x, y, c]);
     }
-    outputParsed = result;
 
     // printWrapped(outputParsed.toString());
 

@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  tflite_flutter
   tflite_flutter_helper
 )
 
