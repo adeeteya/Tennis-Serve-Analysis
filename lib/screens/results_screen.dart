@@ -8,11 +8,12 @@ import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as image_lib;
 import 'package:tennis_serve_analysis/utility/classifier.dart';
 import 'package:tennis_serve_analysis/utility/isolate_utils.dart';
+import 'package:tennis_serve_analysis/widgets/analyzing_loading.dart';
+import 'package:tennis_serve_analysis/widgets/stat_tile.dart';
 import 'package:tennis_serve_analysis/widgets/serve_visualizer.dart';
 
 class ResultsScreen extends StatefulWidget {
@@ -166,114 +167,69 @@ class _ResultsScreenState extends State<ResultsScreen> {
         title: const Text("Serve Analysis Result"),
       ),
       body: (isLoading)
-          ? Center(
+          ? const AnalysisLoadingWidget()
+          : SingleChildScrollView(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
               child: Column(
                 children: [
-                  const Spacer(),
-                  Lottie.asset("assets/lottie/racquet-loading.json"),
-                  const SizedBox(height: 30),
-                  const Text(
-                    "Analyzing Serve",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
+                  Card(
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            const SizedBox(width: 20),
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: ColoredBox(color: Colors.red),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "User Serve",
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 5),
+                        Row(
+                          children: [
+                            const SizedBox(width: 20),
+                            const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: ColoredBox(color: Colors.green),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              "Reference Player Serve",
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                          ],
+                        ),
+                        UserServeVisualizer(points: completeInferenceResults),
+                      ],
                     ),
                   ),
-                  const Spacer(
-                    flex: 2,
+                  const SizedBox(height: 20),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Average Knee Angle",
+                    angle: avgKneeAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Average Elbow Angle",
+                    angle: avgElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/shoulder.png",
+                    statTitle: "Average Shoulder Angle",
+                    angle: avgShoulderAngle,
                   ),
                 ],
               ),
-            )
-          : SingleChildScrollView(
-              child: SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    UserServeVisualizer(points: completeInferenceResults),
-                    const Divider(height: 20),
-                    Text(
-                      "Average Knee Angle= ${avgKneeAngle.toStringAsFixed(2)}°",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      "Average Elbow Angle= ${avgElbowAngle.toStringAsFixed(2)}°",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      "Average Shoulder Angle= ${avgShoulderAngle.toStringAsFixed(2)}°",
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ),
-    );
-  }
-}
-
-class ImageVisualizer extends StatefulWidget {
-  final String outputPath;
-  final int numberOfImages;
-  const ImageVisualizer(
-      {Key? key, required this.outputPath, required this.numberOfImages})
-      : super(key: key);
-
-  @override
-  State<ImageVisualizer> createState() => _ImageVisualizerState();
-}
-
-class _ImageVisualizerState extends State<ImageVisualizer> {
-  int currentIndex = 0;
-  late final Timer timer;
-
-  String imagePath(int index) {
-    if (index < 10) {
-      return "${widget.outputPath}/image_00$index.jpg";
-    } else if (index >= 10 && index <= 99) {
-      return "${widget.outputPath}/image_0$index.jpg";
-    } else {
-      return "${widget.outputPath}/image_$index.jpg";
-    }
-  }
-
-  @override
-  void initState() {
-    //50ms because 20frames per second
-    timer = Timer.periodic(const Duration(milliseconds: 50), (_) {
-      setState(() {
-        if (currentIndex == widget.numberOfImages - 1) {
-          currentIndex = 0;
-        } else {
-          currentIndex++;
-        }
-      });
-    });
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    timer.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Image.file(
-      File(imagePath(currentIndex)),
-      fit: BoxFit.cover,
     );
   }
 }

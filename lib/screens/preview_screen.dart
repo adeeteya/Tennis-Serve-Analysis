@@ -58,6 +58,7 @@ class _PreviewScreenState extends State<PreviewScreen>
     double newSpeed = double.parse(speedString);
     return FloatingActionButton(
       heroTag: "${speedString}x Button",
+      tooltip: "${speedString}x Speed",
       onPressed: () {
         setState(() {
           playbackSpeed = newSpeed;
@@ -91,6 +92,7 @@ class _PreviewScreenState extends State<PreviewScreen>
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: "Playback Button",
+        tooltip: (isPlaying) ? "Pause" : "Play",
         onPressed: togglePlayback,
         child: Icon((isPlaying) ? Icons.pause : Icons.play_arrow),
       ),
@@ -108,6 +110,7 @@ class _PreviewScreenState extends State<PreviewScreen>
             children: [
               FloatingActionButton(
                 heroTag: "Playback Speed Button",
+                tooltip: "Playback Speed",
                 elevation: 0,
                 onPressed: () {
                   if (_animationController.isCompleted) {

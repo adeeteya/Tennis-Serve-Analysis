@@ -43,8 +43,8 @@ class _UserServeVisualizerState extends State<UserServeVisualizer> {
     return CustomPaint(
       willChange: true,
       isComplex: true,
-      size: const Size(500, 500),
-      foregroundPainter: RenderLandmarks(widget.points[currentIndex]),
+      size: const Size(500, 400),
+      painter: RenderLandmarks(widget.points[currentIndex]),
     );
   }
 }
@@ -73,7 +73,7 @@ class RenderLandmarks extends CustomPainter {
     ..strokeWidth = 8;
 
   final redEdge = Paint()
-    ..color = Colors.orange
+    ..color = Colors.redAccent.shade100
     ..strokeWidth = 5;
 
   List<Offset> pointsGreen = [];
