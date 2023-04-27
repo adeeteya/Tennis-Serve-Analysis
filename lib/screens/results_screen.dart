@@ -33,6 +33,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   int numberOfImages = 0;
   String outputPath = "";
   late ServeResult serveResult;
+  late final ServeResult selectedPlayerServeResult;
 
   late final Classifier classifier;
   late final IsolateUtils isolate;
@@ -43,6 +44,14 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
     getDuration();
     saveVideoInImages(File(widget.pickedVideo.path));
     serveResult = ref.read(userServeDataProvider);
+    if (ref.read(userServeDataProvider).height < 180) {
+      selectedPlayerServeResult = fabioFognini;
+    } else if (ref.read(userServeDataProvider).height > 180 &&
+        ref.read(userServeDataProvider).isLeftHanded) {
+      selectedPlayerServeResult = rafaelNadal;
+    } else {
+      selectedPlayerServeResult = rogerFederer;
+    }
     super.initState();
   }
 
@@ -142,74 +151,67 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedPlayerIndex = ref.watch(selectedPlayerProvider);
-    ServeResult selectedPlayer;
-    if (selectedPlayerIndex == 0) {
-      selectedPlayer = rogerFederer;
-    } else {
-      selectedPlayer = selectedPlayerIndex == 1 ? rafaelNadal : fabioFognini;
-    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Serve Analysis Result"),
-        actions: [
-          if (!isLoading)
-            IconButton(
-              onPressed: () async {
-                await showDialog(
-                  context: context,
-                  builder: (context) =>
-                      StatefulBuilder(builder: (context, setState) {
-                    return AlertDialog(
-                      title: const Text("Change Reference Player"),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          RadioListTile(
-                            title: const Text("Roger Federer"),
-                            value: 0,
-                            groupValue: ref.watch(selectedPlayerProvider),
-                            onChanged: (val) {
-                              ref.read(selectedPlayerProvider.notifier).state =
-                                  val ?? 0;
-                              setState(() {});
-                            },
-                          ),
-                          RadioListTile(
-                            title: const Text("Rafael Nadel"),
-                            value: 1,
-                            groupValue: ref.watch(selectedPlayerProvider),
-                            onChanged: (val) {
-                              ref.read(selectedPlayerProvider.notifier).state =
-                                  val ?? 1;
-                              setState(() {});
-                            },
-                          ),
-                          RadioListTile(
-                            title: const Text("Fabio Fognini"),
-                            value: 2,
-                            groupValue: ref.watch(selectedPlayerProvider),
-                            onChanged: (val) {
-                              ref.read(selectedPlayerProvider.notifier).state =
-                                  val ?? 2;
-                              setState(() {});
-                            },
-                          ),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: const Text("Ok"),
-                        ),
-                      ],
-                    );
-                  }),
-                );
-              },
-              icon: const Icon(Icons.change_circle),
-            )
-        ],
+        // actions: [
+        //   if (!isLoading)
+        //     IconButton(
+        //       onPressed: () async {
+        //         await showDialog(
+        //           context: context,
+        //           builder: (context) =>
+        //               StatefulBuilder(builder: (context, setState) {
+        //             return AlertDialog(
+        //               title: const Text("Change Reference Player"),
+        //               content: Column(
+        //                 mainAxisSize: MainAxisSize.min,
+        //                 children: [
+        //                   RadioListTile(
+        //                     title: const Text("Roger Federer"),
+        //                     value: 0,
+        //                     groupValue: ref.watch(selectedPlayerServeResultProvider),
+        //                     onChanged: (val) {
+        //                       ref.read(selectedPlayerServeResultProvider.notifier).state =
+        //                           val ?? 0;
+        //                       setState(() {});
+        //                     },
+        //                   ),
+        //                   RadioListTile(
+        //                     title: const Text("Rafael Nadel"),
+        //                     value: 1,
+        //                     groupValue: ref.watch(selectedPlayerServeResultProvider),
+        //                     onChanged: (val) {
+        //                       ref.read(selectedPlayerServeResultProvider.notifier).state =
+        //                           val ?? 1;
+        //                       setState(() {});
+        //                     },
+        //                   ),
+        //                   RadioListTile(
+        //                     title: const Text("Fabio Fognini"),
+        //                     value: 2,
+        //                     groupValue: ref.watch(selectedPlayerServeResultProvider),
+        //                     onChanged: (val) {
+        //                       ref.read(selectedPlayerServeResultProvider.notifier).state =
+        //                           val ?? 2;
+        //                       setState(() {});
+        //                     },
+        //                   ),
+        //                 ],
+        //               ),
+        //               actions: [
+        //                 TextButton(
+        //                   onPressed: () => Navigator.pop(context),
+        //                   child: const Text("Ok"),
+        //                 ),
+        //               ],
+        //             );
+        //           }),
+        //         );
+        //       },
+        //       icon: const Icon(Icons.change_circle),
+        //     )
+        // ],
       ),
       body: (isLoading)
           ? const AnalysisLoadingWidget()
@@ -248,7 +250,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "${selectedPlayer.playerName} Serve",
+                              "${selectedPlayerServeResult.playerName} Serve",
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ],
@@ -259,7 +261,8 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                               points: serveResult.completeInferenceList,
                             ),
                             UserServeVisualizer(
-                              points: selectedPlayer.completeInferenceList,
+                              points: selectedPlayerServeResult
+                                  .completeInferenceList,
                               isReference: true,
                             ),
                           ],
@@ -278,37 +281,43 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Right Shoulder",
                     angle: serveResult.averageRightShoulderAngle,
-                    referenceAngle: selectedPlayer.averageRightShoulderAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.averageRightShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Right Elbow",
                     angle: serveResult.averageRightElbowAngle,
-                    referenceAngle: selectedPlayer.averageRightElbowAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.averageRightElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Right Knee",
                     angle: serveResult.averageRightKneeAngle,
-                    referenceAngle: selectedPlayer.averageRightKneeAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.averageRightKneeAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Left Shoulder",
                     angle: serveResult.averageLeftShoulderAngle,
-                    referenceAngle: selectedPlayer.averageLeftShoulderAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.averageLeftShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Left Elbow",
                     angle: serveResult.averageLeftElbowAngle,
-                    referenceAngle: selectedPlayer.averageLeftElbowAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.averageLeftElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Left Knee",
                     angle: serveResult.averageLeftKneeAngle,
-                    referenceAngle: selectedPlayer.averageLeftKneeAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.averageLeftKneeAngle,
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 15, 20, 5),
@@ -321,37 +330,40 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Right Shoulder",
                     angle: serveResult.maxRightShoulderAngle,
-                    referenceAngle: selectedPlayer.maxRightShoulderAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.maxRightShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Right Elbow",
                     angle: serveResult.maxRightElbowAngle,
-                    referenceAngle: selectedPlayer.maxRightElbowAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.maxRightElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Right Knee",
                     angle: serveResult.maxRightKneeAngle,
-                    referenceAngle: selectedPlayer.maxRightKneeAngle,
+                    referenceAngle: selectedPlayerServeResult.maxRightKneeAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Left Shoulder",
                     angle: serveResult.maxLeftShoulderAngle,
-                    referenceAngle: selectedPlayer.maxLeftShoulderAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.maxLeftShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Left Elbow",
                     angle: serveResult.maxLeftElbowAngle,
-                    referenceAngle: selectedPlayer.maxLeftElbowAngle,
+                    referenceAngle: selectedPlayerServeResult.maxLeftElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Left Knee",
                     angle: serveResult.maxLeftKneeAngle,
-                    referenceAngle: selectedPlayer.maxLeftKneeAngle,
+                    referenceAngle: selectedPlayerServeResult.maxLeftKneeAngle,
                   ),
                 ],
               ),
