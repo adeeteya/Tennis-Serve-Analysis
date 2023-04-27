@@ -43,6 +43,8 @@ dependencies:
       ref: 783f15e5a87126159147d8ea30b98eea9207ac70
   lottie: ^2.3.2
   flutter_svg: ^2.0.5
+  flutter_riverpod: ^2.3.6
+  collection: ^1.17.1
 
 
 dev_dependencies:

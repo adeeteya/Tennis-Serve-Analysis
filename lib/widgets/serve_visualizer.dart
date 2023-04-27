@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 
 class UserServeVisualizer extends StatefulWidget {
   final List points;
+  final bool isReference;
   const UserServeVisualizer({
     Key? key,
     required this.points,
+    this.isReference = false,
   }) : super(key: key);
 
   @override
@@ -14,7 +16,8 @@ class UserServeVisualizer extends StatefulWidget {
 }
 
 class _UserServeVisualizerState extends State<UserServeVisualizer> {
-  int currentIndex = 0;
+  int userIndex = 0;
+  int referenceIndex = 0;
   late final Timer visualizerTimer;
 
   @override
@@ -22,10 +25,10 @@ class _UserServeVisualizerState extends State<UserServeVisualizer> {
     //50ms because 20frames per second
     visualizerTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
       setState(() {
-        if (currentIndex == widget.points.length - 1) {
-          currentIndex = 0;
+        if (userIndex == widget.points.length - 1) {
+          userIndex = 0;
         } else {
-          currentIndex++;
+          userIndex++;
         }
       });
     });
@@ -44,17 +47,16 @@ class _UserServeVisualizerState extends State<UserServeVisualizer> {
       willChange: true,
       isComplex: true,
       size: const Size(500, 400),
-      painter: RenderLandmarks(widget.points[currentIndex]),
+      painter: RenderLandmarks(widget.points[userIndex], widget.isReference),
     );
   }
 }
 
 class RenderLandmarks extends CustomPainter {
-  late List inferenceList;
+  final List inferenceList;
+  final bool isReference;
 
-  RenderLandmarks(List inferences) {
-    inferenceList = inferences;
-  }
+  RenderLandmarks(this.inferenceList, this.isReference);
 
   final greenPoint = Paint()
     ..color = Colors.green
@@ -73,7 +75,7 @@ class RenderLandmarks extends CustomPainter {
     ..strokeWidth = 8;
 
   final redEdge = Paint()
-    ..color = Colors.redAccent.shade100
+    ..color = Colors.red.shade300
     ..strokeWidth = 5;
 
   List<Offset> pointsGreen = [];
@@ -105,21 +107,6 @@ class RenderLandmarks extends CustomPainter {
     renderEdge(canvas);
     canvas.drawPoints(PointMode.points, pointsGreen, greenPoint);
     canvas.drawPoints(PointMode.points, pointsRed, redPoint);
-
-    // Offset shoulder = Offset((inferenceList[6][0] as int).toDouble(),
-    //     (inferenceList[6][1] as int).toDouble());
-    // Offset elbow = Offset((inferenceList[8][0] as int).toDouble(),
-    //     (inferenceList[8][1] as int).toDouble());
-    // Offset wrist = Offset((inferenceList[10][0] as int).toDouble(),
-    //     (inferenceList[10][1] as int).toDouble());
-    // Offset hip = Offset((inferenceList[12][0] as int).toDouble(),
-    //     (inferenceList[12][1] as int).toDouble());
-    // Offset knee = Offset((inferenceList[14][0] as int).toDouble(),
-    //     (inferenceList[14][1] as int).toDouble());
-    // Offset ankle = Offset((inferenceList[16][0] as int).toDouble(),
-    //     (inferenceList[16][1] as int).toDouble());
-    // pointsGreen = [shoulder, elbow, wrist];
-    // pointsRed = [hip, ankle];
   }
 
   @override
@@ -127,19 +114,24 @@ class RenderLandmarks extends CustomPainter {
 
   void renderEdge(Canvas canvas) {
     for (List point in inferenceList) {
-      if ((point[2] > 0.40)) {
-        pointsRed
-            .add(Offset(point[0].toDouble() - 70, point[1].toDouble() - 30));
+      if ((point[2] > 0.20)) {
+        if (isReference) {
+          pointsGreen
+              .add(Offset(point[0].toDouble() - 70, point[1].toDouble() - 130));
+        } else {
+          pointsRed
+              .add(Offset(point[0].toDouble() - 70, point[1].toDouble() - 130));
+        }
       }
     }
 
     for (List<int> edge in edges) {
       double vertex1X = inferenceList[edge[0]][0].toDouble() - 70;
-      double vertex1Y = inferenceList[edge[0]][1].toDouble() - 30;
+      double vertex1Y = inferenceList[edge[0]][1].toDouble() - 130;
       double vertex2X = inferenceList[edge[1]][0].toDouble() - 70;
-      double vertex2Y = inferenceList[edge[1]][1].toDouble() - 30;
-      canvas.drawLine(
-          Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y), redEdge);
+      double vertex2Y = inferenceList[edge[1]][1].toDouble() - 130;
+      canvas.drawLine(Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y),
+          (isReference) ? greenEdge : redEdge);
     }
   }
 }

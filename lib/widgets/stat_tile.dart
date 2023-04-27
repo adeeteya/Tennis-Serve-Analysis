@@ -4,11 +4,13 @@ class StatTile extends StatelessWidget {
   final String assetPath;
   final String statTitle;
   final double angle;
+  final double? referenceAngle;
   const StatTile(
       {Key? key,
       required this.assetPath,
       required this.statTitle,
-      required this.angle})
+      required this.angle,
+      this.referenceAngle})
       : super(key: key);
 
   @override
@@ -22,9 +24,25 @@ class StatTile extends StatelessWidget {
           fit: BoxFit.scaleDown,
         ),
         title: Text(statTitle),
-        trailing: Text(
-          "${angle.toStringAsFixed(2)}°",
-          style: Theme.of(context).textTheme.titleSmall,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              "${angle.round()}°",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: Colors.red),
+            ),
+            const SizedBox(width: 15),
+            Text(
+              (referenceAngle != null) ? "${referenceAngle?.round()}°" : "NaN",
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(color: Colors.green),
+            ),
+          ],
         ),
       ),
     );

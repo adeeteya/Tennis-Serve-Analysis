@@ -4,18 +4,10 @@ import 'package:tennis_serve_analysis/screens/preview_screen.dart';
 import 'package:tennis_serve_analysis/widgets/handiness_picker.dart';
 import 'package:tennis_serve_analysis/widgets/height_picker.dart';
 
-class Home extends StatefulWidget {
+class Home extends StatelessWidget {
   const Home({Key? key}) : super(key: key);
 
-  @override
-  State<Home> createState() => _HomeState();
-}
-
-class _HomeState extends State<Home> {
-  int height = 185;
-  bool isLeft = false;
-
-  void uploadVideo() async {
+  Future uploadVideo(BuildContext context) async {
     final ImagePicker picker = ImagePicker();
     await picker.pickVideo(source: ImageSource.gallery).then((pickedVideo) {
       if (pickedVideo != null) {
@@ -38,24 +30,10 @@ class _HomeState extends State<Home> {
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
         child: Column(
           children: [
-            Expanded(
-              child: HeightPicker(
-                onHeightChanged: (val) {
-                  setState(() {
-                    height = val;
-                  });
-                },
-              ),
-            ),
+            const Expanded(child: HeightPicker()),
             Row(
               children: [
-                HandinessPicker(
-                  onChange: (val) {
-                    setState(() {
-                      isLeft = val;
-                    });
-                  },
-                ),
+                const HandinessPicker(),
                 const SizedBox(width: 16),
                 Expanded(
                   child: ElevatedButton(
@@ -70,15 +48,15 @@ class _HomeState extends State<Home> {
                     onPressed: () {
                       showDialog(
                         context: context,
-                        builder: (context) => AlertDialog(
+                        builder: (_) => AlertDialog(
                           title: const Text("Instructions"),
                           content: const Text(
                               "1. Record Video in Normal Speed\n2. Record Video in Landscape Mode\n3. Ensure that there is adequate lighting\n4. Make Sure that the Central Service Line is visible and at the extreme left/right end of the video"),
                           actions: [
                             TextButton.icon(
                               onPressed: () {
+                                uploadVideo(context);
                                 Navigator.pop(context);
-                                uploadVideo();
                               },
                               icon: const Icon(Icons.upload),
                               label: const Text("UPLOAD"),

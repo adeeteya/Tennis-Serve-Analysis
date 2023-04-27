@@ -1,16 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:tennis_serve_analysis/controllers/user_controller.dart';
 
-class HandinessPicker extends StatefulWidget {
-  final ValueChanged<bool> onChange;
-  const HandinessPicker({Key? key, required this.onChange}) : super(key: key);
+class HandinessPicker extends StatelessWidget {
+  const HandinessPicker({Key? key}) : super(key: key);
 
-  @override
-  State<HandinessPicker> createState() => _HandinessPickerState();
-}
-
-class _HandinessPickerState extends State<HandinessPicker> {
-  bool isLeft = false;
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -27,35 +22,41 @@ class _HandinessPickerState extends State<HandinessPicker> {
               ),
             ),
             const SizedBox(height: 10),
-            SegmentedButton<bool>(
-              showSelectedIcon: false,
-              style: ElevatedButton.styleFrom(
-                side: BorderSide.none,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              segments: <ButtonSegment<bool>>[
-                ButtonSegment<bool>(
-                  value: true,
-                  label: const Text('Left'),
-                  icon: Transform.rotate(
-                    angle: 3 * pi / 2,
-                    child: const Icon(Icons.sports_tennis),
+            Consumer(
+              builder: (context, ref, _) {
+                return SegmentedButton<bool>(
+                  showSelectedIcon: false,
+                  style: ElevatedButton.styleFrom(
+                    side: BorderSide.none,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
-                ),
-                const ButtonSegment<bool>(
-                  value: false,
-                  label: Text('Right'),
-                  icon: Icon(Icons.sports_tennis),
-                ),
-              ],
-              selected: <bool>{isLeft},
-              onSelectionChanged: (Set<bool> newSelection) {
-                setState(() {
-                  isLeft = newSelection.first;
-                });
-                widget.onChange(isLeft);
+                  segments: <ButtonSegment<bool>>[
+                    ButtonSegment<bool>(
+                      value: true,
+                      label: const Text('Left'),
+                      icon: Transform.rotate(
+                        angle: 3 * pi / 2,
+                        child: const Icon(Icons.sports_tennis),
+                      ),
+                    ),
+                    const ButtonSegment<bool>(
+                      value: false,
+                      label: Text('Right'),
+                      icon: Icon(Icons.sports_tennis),
+                    ),
+                  ],
+                  selected: <bool>{
+                    ref.watch(
+                        userDataProvider.select((value) => value.isLeftHanded))
+                  },
+                  onSelectionChanged: (Set<bool> newSelection) {
+                    ref
+                        .read(userDataProvider.notifier)
+                        .onHandinessChange(newSelection.first);
+                  },
+                );
               },
             )
           ],

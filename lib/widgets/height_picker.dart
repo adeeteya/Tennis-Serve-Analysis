@@ -1,38 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:math' as math;
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:tennis_serve_analysis/controllers/user_controller.dart';
 
-class HeightPicker extends StatefulWidget {
-  final int initialHeight;
+class HeightPicker extends ConsumerStatefulWidget {
   final int minHeight;
   final int maxHeight;
-  final ValueChanged<int> onHeightChanged;
-
   int get totalUnits => maxHeight - minHeight;
-
   const HeightPicker({
     Key? key,
-    this.initialHeight = 185,
     this.minHeight = 155,
     this.maxHeight = 210,
-    required this.onHeightChanged,
   }) : super(key: key);
 
   @override
-  HeightPickerState createState() => HeightPickerState();
+  ConsumerState createState() => _HeightPickerState();
 }
 
-class HeightPickerState extends State<HeightPicker> {
-  late int height;
+class _HeightPickerState extends ConsumerState<HeightPicker> {
   double startDragYOffset = 0;
   int startDragHeight = 0;
   double widgetHeight = 0;
-
-  @override
-  void initState() {
-    super.initState();
-    height = widget.initialHeight;
-  }
 
   int _normalizeHeight(int height) {
     return math.max(widget.minHeight, math.min(widget.maxHeight, height));
@@ -44,7 +33,7 @@ class HeightPickerState extends State<HeightPicker> {
 
   double get _sliderPosition {
     double halfOfBottomLabel = 13 / 2; //13 is the font size
-    int unitsFromBottom = height - widget.minHeight;
+    int unitsFromBottom = ref.read(userDataProvider).height - widget.minHeight;
     return halfOfBottomLabel + unitsFromBottom * _pixelsPerUnit;
   }
 
@@ -55,7 +44,8 @@ class HeightPickerState extends State<HeightPicker> {
   }
 
   String heightInFeetAndInches() {
-    double heightInFeet = height * 0.032808399; //1cm = 0.032808399inches
+    double heightInFeet = ref.read(userDataProvider).height *
+        0.032808399; //1cm = 0.032808399inches
     double heightInRemainingInches = (heightInFeet - heightInFeet.floor()) * 12;
     return "${heightInFeet.floor()}'${heightInRemainingInches.round()}\"";
   }
@@ -70,26 +60,23 @@ class HeightPickerState extends State<HeightPicker> {
   }
 
   void _onTapDown(TapDownDetails tapDownDetails) {
-    setState(() {
-      _normalizeHeight(height);
-    });
+    _normalizeHeight(ref.read(userDataProvider).height);
   }
 
   void _onDragStart(DragStartDetails dragStartDetails) {
-    setState(() {
-      height = _globalOffsetToHeight(dragStartDetails.globalPosition);
-      startDragYOffset = dragStartDetails.globalPosition.dy;
-      startDragHeight = height;
-    });
+    ref.read(userDataProvider.notifier).onHeightChanged(
+        _globalOffsetToHeight(dragStartDetails.globalPosition));
+    startDragYOffset = dragStartDetails.globalPosition.dy;
+    startDragHeight = ref.read(userDataProvider).height;
   }
 
   void _onDragUpdate(DragUpdateDetails dragUpdateDetails) {
     double currentYOffset = dragUpdateDetails.globalPosition.dy;
     double verticalDifference = startDragYOffset - currentYOffset;
     int diffHeight = verticalDifference ~/ _pixelsPerUnit;
-    setState(() {
-      height = _normalizeHeight(startDragHeight + diffHeight);
-    });
+    ref
+        .read(userDataProvider.notifier)
+        .onHeightChanged(_normalizeHeight(startDragHeight + diffHeight));
   }
 
   Widget _drawSlider() {
@@ -108,7 +95,7 @@ class HeightPickerState extends State<HeightPicker> {
                 bottom: 2,
               ),
               child: Text(
-                "${heightInFeetAndInches()} - $height cm",
+                "${heightInFeetAndInches()} - ${ref.read(userDataProvider).height} cm",
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context).primaryColor,
@@ -131,10 +118,11 @@ class HeightPickerState extends State<HeightPicker> {
                     size: 18,
                   ),
                 ),
-                Expanded(
-                  child: Container(
+                const Expanded(
+                  child: SizedBox(
                     height: 2,
-                    color: Colors.indigo,
+                    width: double.infinity,
+                    child: ColoredBox(color: Colors.indigo),
                   ),
                 ),
               ],
@@ -193,6 +181,7 @@ class HeightPickerState extends State<HeightPicker> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(userDataProvider.select((value) => value.height));
     return Card(
       child: Padding(
         padding: const EdgeInsets.only(top: 8),

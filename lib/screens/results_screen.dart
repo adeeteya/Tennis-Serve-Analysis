@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as image_lib;
+import 'package:tennis_serve_analysis/models/serve_result.dart';
 import 'package:tennis_serve_analysis/utility/classifier.dart';
 import 'package:tennis_serve_analysis/utility/isolate_utils.dart';
 import 'package:tennis_serve_analysis/widgets/analyzing_loading.dart';
@@ -30,10 +31,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
   double videoDuration = 60.19;
   int numberOfImages = 0;
   String outputPath = "";
-  double avgShoulderAngle = 0;
-  double avgKneeAngle = 0;
-  double avgElbowAngle = 0;
-  List completeInferenceResults = [];
+  late ServeResult serveResult;
 
   late final Classifier classifier;
   late final IsolateUtils isolate;
@@ -43,6 +41,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     initClassifier();
     getDuration();
     saveVideoInImages(File(widget.pickedVideo.path));
+    serveResult = ServeResult("User", 172);
     super.initState();
   }
 
@@ -119,45 +118,28 @@ class _ResultsScreenState extends State<ResultsScreen> {
     }
   }
 
+  Future<List> inference(IsolateData isolateData) async {
+    ReceivePort responsePort = ReceivePort();
+    isolate.sendPort.send(isolateData..responsePort = responsePort.sendPort);
+    var results = await responsePort.first;
+    return results;
+  }
+
   Future createIsolates() async {
     setState(() {
       isLoading = true;
     });
     image_lib.Image tmpImage;
-    double shoulderAngleSum = 0;
-    double kneeAngleSum = 0;
-    double elbowAngleSum = 0;
     for (int i = 0; i < numberOfImages; i++) {
       tmpImage = image_lib.decodeJpg(File(imagePath(i + 1)).readAsBytesSync())!;
       var isolateData = IsolateData(tmpImage, classifier.interpreter.address);
       List inferenceResults = await inference(isolateData);
-      List<int> shoulder = [inferenceResults[6][0], inferenceResults[6][1]];
-      List<int> elbow = [inferenceResults[8][0], inferenceResults[8][1]];
-      List<int> wrist = [inferenceResults[10][0], inferenceResults[10][1]];
-      List<int> hip = [inferenceResults[12][0], inferenceResults[12][1]];
-      List<int> knee = [inferenceResults[14][0], inferenceResults[14][1]];
-      List<int> ankle = [inferenceResults[16][0], inferenceResults[16][1]];
-      double shoulderAngle = getAngle(elbow, shoulder, hip);
-      double kneeAngle = getAngle(hip, knee, ankle);
-      double elbowAngle = getAngle(wrist, elbow, shoulder);
-      shoulderAngleSum += shoulderAngle;
-      kneeAngleSum += kneeAngle;
-      elbowAngleSum += elbowAngle;
-      completeInferenceResults.add(inferenceResults);
+      serveResult.addInferenceFromFrame(inferenceResults);
+      // print(inferenceResults); ///use this to get inference for players
     }
     setState(() {
-      avgShoulderAngle = shoulderAngleSum / numberOfImages;
-      avgKneeAngle = kneeAngleSum / numberOfImages;
-      avgElbowAngle = elbowAngleSum / numberOfImages;
       isLoading = false;
     });
-  }
-
-  Future<List<dynamic>> inference(IsolateData isolateData) async {
-    ReceivePort responsePort = ReceivePort();
-    isolate.sendPort.send(isolateData..responsePort = responsePort.sendPort);
-    var results = await responsePort.first;
-    return results;
   }
 
   @override
@@ -171,6 +153,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
           : SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(10, 0, 10, 20),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Card(
                     child: Column(
@@ -207,25 +190,44 @@ class _ResultsScreenState extends State<ResultsScreen> {
                             ),
                           ],
                         ),
-                        UserServeVisualizer(points: completeInferenceResults),
+                        Stack(
+                          children: [
+                            UserServeVisualizer(
+                              points: serveResult.completeInferenceList,
+                            ),
+                            UserServeVisualizer(
+                              points: fabioFognini.completeInferenceList,
+                              isReference: true,
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 20),
-                  StatTile(
-                    assetPath: "assets/images/knee.png",
-                    statTitle: "Average Knee Angle",
-                    angle: avgKneeAngle,
-                  ),
-                  StatTile(
-                    assetPath: "assets/images/elbow.png",
-                    statTitle: "Average Elbow Angle",
-                    angle: avgElbowAngle,
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 15, 20, 5),
+                    child: Text(
+                      "Average Angles",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
                   ),
                   StatTile(
                     assetPath: "assets/images/shoulder.png",
-                    statTitle: "Average Shoulder Angle",
-                    angle: avgShoulderAngle,
+                    statTitle: "Right Shoulder",
+                    angle: serveResult.averageRightShoulderAngle,
+                    referenceAngle: fabioFognini.averageRightShoulderAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Right Elbow",
+                    angle: serveResult.averageRightElbowAngle,
+                    referenceAngle: fabioFognini.averageRightElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Right Knee",
+                    angle: serveResult.averageRightKneeAngle,
+                    referenceAngle: fabioFognini.averageRightKneeAngle,
                   ),
                 ],
               ),
