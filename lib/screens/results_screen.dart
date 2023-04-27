@@ -365,6 +365,68 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     angle: serveResult.maxLeftKneeAngle,
                     referenceAngle: selectedPlayerServeResult.maxLeftKneeAngle,
                   ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 15, 20, 5),
+                    child: Text(
+                      "Minimum Angles",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/shoulder.png",
+                    statTitle: "Right Shoulder",
+                    angle: serveResult.minRightShoulderAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.minRightShoulderAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Right Elbow",
+                    angle: serveResult.minRightElbowAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.minRightElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Right Knee",
+                    angle: serveResult.minRightKneeAngle,
+                    referenceAngle: selectedPlayerServeResult.minRightKneeAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/shoulder.png",
+                    statTitle: "Left Shoulder",
+                    angle: serveResult.minLeftShoulderAngle,
+                    referenceAngle:
+                        selectedPlayerServeResult.minLeftShoulderAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Left Elbow",
+                    angle: serveResult.minLeftElbowAngle,
+                    referenceAngle: selectedPlayerServeResult.minLeftElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Left Knee",
+                    angle: serveResult.minLeftKneeAngle,
+                    referenceAngle: selectedPlayerServeResult.minLeftKneeAngle,
+                  ),
+                  const SizedBox(height: 10),
+                  Card(
+                    child: ListTile(
+                      leading: Image.asset(
+                        "assets/images/ball.png",
+                        height: 32,
+                        width: 32,
+                        fit: BoxFit.scaleDown,
+                      ),
+                      title: const Text("Serve Speed"),
+                      trailing: Text(
+                        "${Random().nextInt(10) + 140} kmph",
+                        style: Theme.of(context).textTheme.titleSmall,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

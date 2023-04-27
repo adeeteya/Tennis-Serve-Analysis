@@ -82,6 +82,13 @@ class ServeResult {
   double get maxRightKneeAngle => rightKneeAngles.max;
   double get maxRightElbowAngle => rightElbowAngles.max;
 
+  double get minLeftShoulderAngle => leftShoulderAngles.min;
+  double get minLeftKneeAngle => leftKneeAngles.min;
+  double get minLeftElbowAngle => leftElbowAngles.min;
+  double get minRightShoulderAngle => rightShoulderAngles.min;
+  double get minRightKneeAngle => rightKneeAngles.min;
+  double get minRightElbowAngle => rightElbowAngles.min;
+
   List get completeInferenceList => [
         for (int i = 0; i < nosePoints.length; i++)
           [
