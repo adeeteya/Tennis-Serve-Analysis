@@ -6,9 +6,11 @@ import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as image_lib;
+import 'package:tennis_serve_analysis/controllers/user_controller.dart';
 import 'package:tennis_serve_analysis/models/serve_result.dart';
 import 'package:tennis_serve_analysis/utility/classifier.dart';
 import 'package:tennis_serve_analysis/utility/isolate_utils.dart';
@@ -16,15 +18,15 @@ import 'package:tennis_serve_analysis/widgets/analyzing_loading.dart';
 import 'package:tennis_serve_analysis/widgets/stat_tile.dart';
 import 'package:tennis_serve_analysis/widgets/serve_visualizer.dart';
 
-class ResultsScreen extends StatefulWidget {
+class ResultsScreen extends ConsumerStatefulWidget {
   final XFile pickedVideo;
   const ResultsScreen({Key? key, required this.pickedVideo}) : super(key: key);
 
   @override
-  State<ResultsScreen> createState() => _ResultsScreenState();
+  ConsumerState createState() => _ResultsScreenState();
 }
 
-class _ResultsScreenState extends State<ResultsScreen> {
+class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   bool isLoading = true;
   double progressValue = 0;
   double videoDuration = 60.19;
@@ -40,7 +42,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     initClassifier();
     getDuration();
     saveVideoInImages(File(widget.pickedVideo.path));
-    serveResult = ServeResult("User", 172);
+    serveResult = ref.read(userServeDataProvider);
     super.initState();
   }
 
@@ -140,9 +142,74 @@ class _ResultsScreenState extends State<ResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final selectedPlayerIndex = ref.watch(selectedPlayerProvider);
+    ServeResult selectedPlayer;
+    if (selectedPlayerIndex == 0) {
+      selectedPlayer = rogerFederer;
+    } else {
+      selectedPlayer = selectedPlayerIndex == 1 ? rafaelNadal : fabioFognini;
+    }
     return Scaffold(
       appBar: AppBar(
         title: const Text("Serve Analysis Result"),
+        actions: [
+          if (!isLoading)
+            IconButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: (context) =>
+                      StatefulBuilder(builder: (context, setState) {
+                    return AlertDialog(
+                      title: const Text("Change Reference Player"),
+                      content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          RadioListTile(
+                            title: const Text("Roger Federer"),
+                            value: 0,
+                            groupValue: ref.watch(selectedPlayerProvider),
+                            onChanged: (val) {
+                              ref.read(selectedPlayerProvider.notifier).state =
+                                  val ?? 0;
+                              setState(() {});
+                            },
+                          ),
+                          RadioListTile(
+                            title: const Text("Rafael Nadel"),
+                            value: 1,
+                            groupValue: ref.watch(selectedPlayerProvider),
+                            onChanged: (val) {
+                              ref.read(selectedPlayerProvider.notifier).state =
+                                  val ?? 1;
+                              setState(() {});
+                            },
+                          ),
+                          RadioListTile(
+                            title: const Text("Fabio Fognini"),
+                            value: 2,
+                            groupValue: ref.watch(selectedPlayerProvider),
+                            onChanged: (val) {
+                              ref.read(selectedPlayerProvider.notifier).state =
+                                  val ?? 2;
+                              setState(() {});
+                            },
+                          ),
+                        ],
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Ok"),
+                        ),
+                      ],
+                    );
+                  }),
+                );
+              },
+              icon: const Icon(Icons.change_circle),
+            )
+        ],
       ),
       body: (isLoading)
           ? const AnalysisLoadingWidget()
@@ -181,7 +248,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "Reference Player Serve",
+                              "${selectedPlayer.playerName} Serve",
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ],
@@ -192,7 +259,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
                               points: serveResult.completeInferenceList,
                             ),
                             UserServeVisualizer(
-                              points: fabioFognini.completeInferenceList,
+                              points: selectedPlayer.completeInferenceList,
                               isReference: true,
                             ),
                           ],
@@ -211,37 +278,37 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Right Shoulder",
                     angle: serveResult.averageRightShoulderAngle,
-                    referenceAngle: fabioFognini.averageRightShoulderAngle,
+                    referenceAngle: selectedPlayer.averageRightShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Right Elbow",
                     angle: serveResult.averageRightElbowAngle,
-                    referenceAngle: fabioFognini.averageRightElbowAngle,
+                    referenceAngle: selectedPlayer.averageRightElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Right Knee",
                     angle: serveResult.averageRightKneeAngle,
-                    referenceAngle: fabioFognini.averageRightKneeAngle,
+                    referenceAngle: selectedPlayer.averageRightKneeAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Left Shoulder",
                     angle: serveResult.averageLeftShoulderAngle,
-                    referenceAngle: fabioFognini.averageLeftShoulderAngle,
+                    referenceAngle: selectedPlayer.averageLeftShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Left Elbow",
                     angle: serveResult.averageLeftElbowAngle,
-                    referenceAngle: fabioFognini.averageLeftElbowAngle,
+                    referenceAngle: selectedPlayer.averageLeftElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Left Knee",
                     angle: serveResult.averageLeftKneeAngle,
-                    referenceAngle: fabioFognini.averageLeftKneeAngle,
+                    referenceAngle: selectedPlayer.averageLeftKneeAngle,
                   ),
                   Padding(
                     padding: const EdgeInsets.fromLTRB(10, 15, 20, 5),
@@ -254,37 +321,37 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Right Shoulder",
                     angle: serveResult.maxRightShoulderAngle,
-                    referenceAngle: fabioFognini.maxRightShoulderAngle,
+                    referenceAngle: selectedPlayer.maxRightShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Right Elbow",
                     angle: serveResult.maxRightElbowAngle,
-                    referenceAngle: fabioFognini.maxRightElbowAngle,
+                    referenceAngle: selectedPlayer.maxRightElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Right Knee",
                     angle: serveResult.maxRightKneeAngle,
-                    referenceAngle: fabioFognini.maxRightKneeAngle,
+                    referenceAngle: selectedPlayer.maxRightKneeAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/shoulder.png",
                     statTitle: "Left Shoulder",
                     angle: serveResult.maxLeftShoulderAngle,
-                    referenceAngle: fabioFognini.maxLeftShoulderAngle,
+                    referenceAngle: selectedPlayer.maxLeftShoulderAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/elbow.png",
                     statTitle: "Left Elbow",
                     angle: serveResult.maxLeftElbowAngle,
-                    referenceAngle: fabioFognini.maxLeftElbowAngle,
+                    referenceAngle: selectedPlayer.maxLeftElbowAngle,
                   ),
                   StatTile(
                     assetPath: "assets/images/knee.png",
                     statTitle: "Left Knee",
                     angle: serveResult.maxLeftKneeAngle,
-                    referenceAngle: fabioFognini.maxLeftKneeAngle,
+                    referenceAngle: selectedPlayer.maxLeftKneeAngle,
                   ),
                 ],
               ),

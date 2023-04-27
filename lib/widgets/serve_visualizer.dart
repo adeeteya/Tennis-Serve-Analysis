@@ -46,7 +46,7 @@ class _UserServeVisualizerState extends State<UserServeVisualizer> {
     return CustomPaint(
       willChange: true,
       isComplex: true,
-      size: const Size(500, 400),
+      size: const Size(500, 500),
       painter: RenderLandmarks(widget.points[userIndex], widget.isReference),
     );
   }

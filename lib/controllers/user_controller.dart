@@ -1,13 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:tennis_serve_analysis/models/user_data.dart';
+import 'package:tennis_serve_analysis/models/serve_result.dart';
+import 'package:tennis_serve_analysis/utility/classifier.dart';
+import 'package:tennis_serve_analysis/utility/isolate_utils.dart';
 
-final userDataProvider =
-    NotifierProvider<UserDataNotifier, UserData>(() => UserDataNotifier());
+final selectedPlayerProvider = StateProvider<int>((ref) => 0);
 
-class UserDataNotifier extends Notifier<UserData> {
+final userServeDataProvider =
+    NotifierProvider<UserServeResultNotifier, ServeResult>(
+        () => UserServeResultNotifier());
+
+class UserServeResultNotifier extends Notifier<ServeResult> {
+  double videoDuration = 60.19;
+  int numberOfImages = 0;
+  String outputPath = "";
+  late final Classifier classifier;
+  late final IsolateUtils isolate;
+
   @override
-  UserData build() {
-    return UserData(185, false);
+  ServeResult build() {
+    return ServeResult("User", 185, false);
   }
 
   void onHeightChanged(int newHeight) {

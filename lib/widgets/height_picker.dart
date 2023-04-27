@@ -33,7 +33,8 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
 
   double get _sliderPosition {
     double halfOfBottomLabel = 13 / 2; //13 is the font size
-    int unitsFromBottom = ref.read(userDataProvider).height - widget.minHeight;
+    int unitsFromBottom =
+        ref.read(userServeDataProvider).height - widget.minHeight;
     return halfOfBottomLabel + unitsFromBottom * _pixelsPerUnit;
   }
 
@@ -44,7 +45,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
   }
 
   String heightInFeetAndInches() {
-    double heightInFeet = ref.read(userDataProvider).height *
+    double heightInFeet = ref.read(userServeDataProvider).height *
         0.032808399; //1cm = 0.032808399inches
     double heightInRemainingInches = (heightInFeet - heightInFeet.floor()) * 12;
     return "${heightInFeet.floor()}'${heightInRemainingInches.round()}\"";
@@ -60,14 +61,14 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
   }
 
   void _onTapDown(TapDownDetails tapDownDetails) {
-    _normalizeHeight(ref.read(userDataProvider).height);
+    _normalizeHeight(ref.read(userServeDataProvider).height);
   }
 
   void _onDragStart(DragStartDetails dragStartDetails) {
-    ref.read(userDataProvider.notifier).onHeightChanged(
+    ref.read(userServeDataProvider.notifier).onHeightChanged(
         _globalOffsetToHeight(dragStartDetails.globalPosition));
     startDragYOffset = dragStartDetails.globalPosition.dy;
-    startDragHeight = ref.read(userDataProvider).height;
+    startDragHeight = ref.read(userServeDataProvider).height;
   }
 
   void _onDragUpdate(DragUpdateDetails dragUpdateDetails) {
@@ -75,7 +76,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
     double verticalDifference = startDragYOffset - currentYOffset;
     int diffHeight = verticalDifference ~/ _pixelsPerUnit;
     ref
-        .read(userDataProvider.notifier)
+        .read(userServeDataProvider.notifier)
         .onHeightChanged(_normalizeHeight(startDragHeight + diffHeight));
   }
 
@@ -95,7 +96,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
                 bottom: 2,
               ),
               child: Text(
-                "${heightInFeetAndInches()} - ${ref.read(userDataProvider).height} cm",
+                "${heightInFeetAndInches()} - ${ref.read(userServeDataProvider).height} cm",
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context).primaryColor,
@@ -181,7 +182,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(userDataProvider.select((value) => value.height));
+    ref.watch(userServeDataProvider.select((value) => value.height));
     return Card(
       child: Padding(
         padding: const EdgeInsets.only(top: 8),

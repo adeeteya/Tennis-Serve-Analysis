@@ -48,12 +48,12 @@ class HandinessPicker extends StatelessWidget {
                     ),
                   ],
                   selected: <bool>{
-                    ref.watch(
-                        userDataProvider.select((value) => value.isLeftHanded))
+                    ref.watch(userServeDataProvider
+                        .select((value) => value.isLeftHanded))
                   },
                   onSelectionChanged: (Set<bool> newSelection) {
                     ref
-                        .read(userDataProvider.notifier)
+                        .read(userServeDataProvider.notifier)
                         .onHandinessChange(newSelection.first);
                   },
                 );
