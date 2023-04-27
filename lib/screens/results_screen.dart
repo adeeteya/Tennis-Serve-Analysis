@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:isolate';
 import 'dart:math';
 import 'package:ffmpeg_kit_flutter/ffmpeg_kit.dart';
-import 'package:ffmpeg_kit_flutter/ffmpeg_kit_config.dart';
 import 'package:ffmpeg_kit_flutter/ffprobe_kit.dart';
 import 'package:ffmpeg_kit_flutter/return_code.dart';
 import 'package:flutter/material.dart';
@@ -82,10 +81,7 @@ class _ResultsScreenState extends State<ResultsScreen> {
     String command =
         "-i ${selectedVideo.path} -vf fps=20 $outputPath/image_%03d.jpg";
     FFmpegKit.executeAsync(command, (session) async {
-      final state =
-          FFmpegKitConfig.sessionStateToString(await session.getState());
       final returnCode = await session.getReturnCode();
-      debugPrint("FFmpeg process exited with state $state and rc $returnCode");
       if (ReturnCode.isSuccess(returnCode)) {
         debugPrint('Video successfuly split');
         numberOfImages = (videoDuration * 20).round();
@@ -228,6 +224,67 @@ class _ResultsScreenState extends State<ResultsScreen> {
                     statTitle: "Right Knee",
                     angle: serveResult.averageRightKneeAngle,
                     referenceAngle: fabioFognini.averageRightKneeAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/shoulder.png",
+                    statTitle: "Left Shoulder",
+                    angle: serveResult.averageLeftShoulderAngle,
+                    referenceAngle: fabioFognini.averageLeftShoulderAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Left Elbow",
+                    angle: serveResult.averageLeftElbowAngle,
+                    referenceAngle: fabioFognini.averageLeftElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Left Knee",
+                    angle: serveResult.averageLeftKneeAngle,
+                    referenceAngle: fabioFognini.averageLeftKneeAngle,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 15, 20, 5),
+                    child: Text(
+                      "Maximum Angles",
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/shoulder.png",
+                    statTitle: "Right Shoulder",
+                    angle: serveResult.maxRightShoulderAngle,
+                    referenceAngle: fabioFognini.maxRightShoulderAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Right Elbow",
+                    angle: serveResult.maxRightElbowAngle,
+                    referenceAngle: fabioFognini.maxRightElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Right Knee",
+                    angle: serveResult.maxRightKneeAngle,
+                    referenceAngle: fabioFognini.maxRightKneeAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/shoulder.png",
+                    statTitle: "Left Shoulder",
+                    angle: serveResult.maxLeftShoulderAngle,
+                    referenceAngle: fabioFognini.maxLeftShoulderAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/elbow.png",
+                    statTitle: "Left Elbow",
+                    angle: serveResult.maxLeftElbowAngle,
+                    referenceAngle: fabioFognini.maxLeftElbowAngle,
+                  ),
+                  StatTile(
+                    assetPath: "assets/images/knee.png",
+                    statTitle: "Left Knee",
+                    angle: serveResult.maxLeftKneeAngle,
+                    referenceAngle: fabioFognini.maxLeftKneeAngle,
                   ),
                 ],
               ),

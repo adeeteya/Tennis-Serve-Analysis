@@ -126,10 +126,10 @@ class RenderLandmarks extends CustomPainter {
     }
 
     for (List<int> edge in edges) {
-      double vertex1X = inferenceList[edge[0]][0].toDouble() - 70;
-      double vertex1Y = inferenceList[edge[0]][1].toDouble() - 130;
-      double vertex2X = inferenceList[edge[1]][0].toDouble() - 70;
-      double vertex2Y = inferenceList[edge[1]][1].toDouble() - 130;
+      double vertex1X = inferenceList[edge[0]][0] - 70;
+      double vertex1Y = inferenceList[edge[0]][1] - 130;
+      double vertex2X = inferenceList[edge[1]][0] - 70;
+      double vertex2Y = inferenceList[edge[1]][1] - 130;
       canvas.drawLine(Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y),
           (isReference) ? greenEdge : redEdge);
     }
