@@ -22,9 +22,13 @@ class InferencePoint {
 
 class ServeResult {
   final String playerName;
-  final String? playerPhotoUrl;
+  final String? playerPhotoAssetPath;
   final int height; //in cm
   final bool isLeftHanded;
+
+  double minWidth = 2000;
+  double minHeight = 2000;
+  double maxHeight = 0;
 
   final List<double> leftShoulderAngles = [];
   final List<double> leftKneeAngles = [];
@@ -52,7 +56,7 @@ class ServeResult {
   final List<InferencePoint> rightAnklePoints = [];
 
   ServeResult(this.playerName, this.height, this.isLeftHanded,
-      {this.playerPhotoUrl});
+      {this.playerPhotoAssetPath});
 
   ServeResult copyWith({String? playerName, int? height, bool? isLeftHanded}) {
     return ServeResult(playerName ?? this.playerName, height ?? this.height,
@@ -180,6 +184,55 @@ class ServeResult {
         rightShoulderPoint.point));
     rightShoulderAngles.add(getAngle(
         rightElbowPoint.point, rightShoulderPoint.point, rightHipPoint.point));
+
+    List<double> pointHeights = [
+      nosePoint.point.dy,
+      leftEyePoint.point.dy,
+      rightEyePoint.point.dy,
+      leftEarPoint.point.dy,
+      rightEarPoint.point.dy,
+      leftShoulderPoint.point.dy,
+      rightShoulderPoint.point.dy,
+      leftElbowPoint.point.dy,
+      rightElbowPoint.point.dy,
+      leftWristPoint.point.dy,
+      rightWristPoint.point.dy,
+      leftHipPoint.point.dy,
+      rightHipPoint.point.dy,
+      leftKneePoint.point.dy,
+      rightKneePoint.point.dy,
+      leftAnklePoint.point.dy,
+      rightAnklePoint.point.dy,
+    ];
+    List<double> pointWidths = [
+      nosePoint.point.dx,
+      leftEyePoint.point.dx,
+      rightEyePoint.point.dx,
+      leftEarPoint.point.dx,
+      rightEarPoint.point.dx,
+      leftShoulderPoint.point.dx,
+      rightShoulderPoint.point.dx,
+      leftElbowPoint.point.dx,
+      rightElbowPoint.point.dx,
+      leftWristPoint.point.dx,
+      rightWristPoint.point.dx,
+      leftHipPoint.point.dx,
+      rightHipPoint.point.dx,
+      leftKneePoint.point.dx,
+      rightKneePoint.point.dx,
+      leftAnklePoint.point.dx,
+      rightAnklePoint.point.dx,
+    ];
+
+    if (pointWidths.min < minWidth) {
+      minWidth = pointWidths.min;
+    }
+    if (pointHeights.min < minHeight) {
+      minHeight = pointHeights.min;
+    }
+    if (pointHeights.max > maxHeight) {
+      maxHeight = pointHeights.max;
+    }
   }
 
   String heightInFeetAndInches() {
@@ -188,9 +241,14 @@ class ServeResult {
     return "${heightInFeet.floor()}ft ${heightInRemainingInches.round()}in";
   }
 
-  factory ServeResult.fromCompleteInferenceList(String playerName, int height,
-      bool isLeftHanded, List completeExtractedInferenceList) {
-    ServeResult newServeResult = ServeResult(playerName, height, isLeftHanded);
+  factory ServeResult.fromCompleteInferenceList(
+      String playerName,
+      int height,
+      bool isLeftHanded,
+      String imageAssetPath,
+      List completeExtractedInferenceList) {
+    ServeResult newServeResult = ServeResult(playerName, height, isLeftHanded,
+        playerPhotoAssetPath: imageAssetPath);
     for (var inferenceList in completeExtractedInferenceList) {
       newServeResult.addInferenceFromFrame(inferenceList);
     }

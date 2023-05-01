@@ -10,6 +10,7 @@ final ServeResult fabioFognini = ServeResult.fromCompleteInferenceList(
   "Fabio Fognini",
   178,
   false,
+  "assets/images/fabio_fognini.jpeg",
   [
     [
       [260, 304, 0.23688101768493652],
@@ -1176,6 +1177,7 @@ final ServeResult rogerFederer = ServeResult.fromCompleteInferenceList(
   "Roger Federer",
   185,
   false,
+  "assets/images/roger_federer.jpeg",
   [
     [
       [264, 304, 0.6883679628372192],
@@ -2342,6 +2344,7 @@ final ServeResult rafaelNadal = ServeResult.fromCompleteInferenceList(
   "Rafael Nadal",
   185,
   true,
+  "assets/images/rafael_nadal.jpeg",
   [
     [
       [238, 281, 0.497579962015152],

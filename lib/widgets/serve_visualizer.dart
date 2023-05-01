@@ -4,10 +4,14 @@ import 'package:flutter/material.dart';
 class UserServeVisualizer extends StatefulWidget {
   final List points;
   final bool isReference;
+  final Size minSize;
+  final Size maxSize;
   const UserServeVisualizer({
     Key? key,
     required this.points,
     this.isReference = false,
+    this.minSize = Size.zero,
+    this.maxSize = Size.infinite,
   }) : super(key: key);
 
   @override
@@ -17,17 +21,17 @@ class UserServeVisualizer extends StatefulWidget {
 class _UserServeVisualizerState extends State<UserServeVisualizer>
     with SingleTickerProviderStateMixin {
   int userIndex = 0;
-  late final AnimationController _animationController;
+  late AnimationController _animationController;
 
   @override
   void initState() {
+    super.initState();
     //50ms because 20frames per second (Each image coordinate  persists for 50ms)
     _animationController = AnimationController(
         vsync: this,
         duration: Duration(milliseconds: widget.points.length * 50),
         upperBound: widget.points.length.toDouble())
       ..repeat();
-    super.initState();
   }
 
   @override
@@ -44,10 +48,12 @@ class _UserServeVisualizerState extends State<UserServeVisualizer>
         return CustomPaint(
           willChange: true,
           isComplex: true,
-          size: const Size(500, 500),
+          size: Size(500, widget.maxSize.height - widget.minSize.height + 10),
           painter: RenderLandmarks(
-              widget.points[_animationController.value.toInt()],
-              widget.isReference),
+            widget.points[_animationController.value.toInt()],
+            widget.isReference,
+            widget.minSize,
+          ),
         );
       },
     );
@@ -57,8 +63,9 @@ class _UserServeVisualizerState extends State<UserServeVisualizer>
 class RenderLandmarks extends CustomPainter {
   final List inferenceList;
   final bool isReference;
+  final Size minSize;
 
-  RenderLandmarks(this.inferenceList, this.isReference);
+  RenderLandmarks(this.inferenceList, this.isReference, this.minSize);
 
   final greenPoint = Paint()
     ..color = Colors.green
@@ -118,20 +125,20 @@ class RenderLandmarks extends CustomPainter {
     for (List point in inferenceList) {
       if ((point[2] > 0.20)) {
         if (isReference) {
-          pointsGreen
-              .add(Offset(point[0].toDouble() - 70, point[1].toDouble() - 130));
+          pointsGreen.add(Offset(point[0].toDouble() - minSize.width + 40,
+              point[1].toDouble() - minSize.height));
         } else {
-          pointsRed
-              .add(Offset(point[0].toDouble() - 70, point[1].toDouble() - 130));
+          pointsRed.add(Offset(point[0].toDouble() - minSize.width + 40,
+              point[1].toDouble() - minSize.height));
         }
       }
     }
 
     for (List<int> edge in edges) {
-      double vertex1X = inferenceList[edge[0]][0] - 70;
-      double vertex1Y = inferenceList[edge[0]][1] - 130;
-      double vertex2X = inferenceList[edge[1]][0] - 70;
-      double vertex2Y = inferenceList[edge[1]][1] - 130;
+      double vertex1X = inferenceList[edge[0]][0] - minSize.width + 40;
+      double vertex1Y = inferenceList[edge[0]][1] - minSize.height;
+      double vertex2X = inferenceList[edge[1]][0] - minSize.width + 40;
+      double vertex2Y = inferenceList[edge[1]][1] - minSize.height;
       canvas.drawLine(Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y),
           (isReference) ? greenEdge : redEdge);
     }

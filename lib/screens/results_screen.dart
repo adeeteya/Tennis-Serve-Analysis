@@ -11,10 +11,13 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:image/image.dart' as image_lib;
 import 'package:tennis_serve_analysis/controllers/user_controller.dart';
+import 'package:tennis_serve_analysis/finals.dart';
 import 'package:tennis_serve_analysis/models/serve_result.dart';
+import 'package:tennis_serve_analysis/screens/change_reference_player.dart';
 import 'package:tennis_serve_analysis/utility/classifier.dart';
 import 'package:tennis_serve_analysis/utility/isolate_utils.dart';
 import 'package:tennis_serve_analysis/widgets/analyzing_loading.dart';
+import 'package:tennis_serve_analysis/widgets/reference_player_card.dart';
 import 'package:tennis_serve_analysis/widgets/stat_tile.dart';
 import 'package:tennis_serve_analysis/widgets/serve_visualizer.dart';
 
@@ -153,59 +156,25 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
         ref.watch(selectedPlayerProvider(selectedPlayerIndex));
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Serve Analysis Result"),
+        title: const Text("Analysis Result"),
         actions: [
           if (!isLoading)
             IconButton(
               onPressed: () async {
-                await showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: const Text("Change Reference Player"),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        RadioListTile(
-                          title: const Text("Fabio Fognini"),
-                          value: 0,
-                          groupValue: selectedPlayerIndex,
-                          onChanged: (val) {
-                            selectedPlayerIndex = val ?? 2;
-                            setState(() {});
-                            Navigator.pop(context);
-                          },
-                        ),
-                        RadioListTile(
-                          title: const Text("Roger Federer"),
-                          value: 1,
-                          groupValue: selectedPlayerIndex,
-                          onChanged: (val) {
-                            selectedPlayerIndex = val ?? 0;
-                            setState(() {});
-                            Navigator.pop(context);
-                          },
-                        ),
-                        RadioListTile(
-                          title: const Text("Rafael Nadel"),
-                          value: 2,
-                          groupValue: selectedPlayerIndex,
-                          onChanged: (val) {
-                            selectedPlayerIndex = val ?? 1;
-                            setState(() {});
-                            Navigator.pop(context);
-                          },
-                        ),
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text("Ok"),
-                      ),
-                    ],
-                  ),
-                );
+                selectedPlayerIndex = availableReferencePlayers.indexWhere(
+                    (element) =>
+                        element.playerName ==
+                        selectedPlayerServeResult.playerName);
+                selectedPlayerIndex =
+                    (selectedPlayerIndex == -1) ? null : selectedPlayerIndex;
+                selectedPlayerIndex = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ChangeReferencePlayerScreen(
+                            selectedPlayerIndex: selectedPlayerIndex ?? 0)));
+                setState(() {});
               },
+              tooltip: "Change Reference Player",
               icon: const Icon(Icons.change_circle),
             )
         ],
@@ -217,21 +186,24 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  ReferencePlayerCard(
+                    referencePlayerResult: selectedPlayerServeResult,
+                  ),
                   Card(
                     child: Column(
                       children: [
-                        const SizedBox(height: 10),
+                        const SizedBox(height: 5),
                         Row(
                           children: [
                             const SizedBox(width: 20),
                             const SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 15,
+                              width: 15,
                               child: ColoredBox(color: Colors.red),
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "User Serve",
+                              "User's Serve",
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ],
@@ -241,13 +213,13 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                           children: [
                             const SizedBox(width: 20),
                             const SizedBox(
-                              height: 20,
-                              width: 20,
+                              height: 15,
+                              width: 15,
                               child: ColoredBox(color: Colors.green),
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              "${selectedPlayerServeResult.playerName} Serve",
+                              "${selectedPlayerServeResult.playerName}'s Serve",
                               style: Theme.of(context).textTheme.titleSmall,
                             ),
                           ],
@@ -256,11 +228,25 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                           children: [
                             UserServeVisualizer(
                               points: serveResult.completeInferenceList,
+                              minSize: Size(
+                                  serveResult.minWidth, serveResult.minHeight),
+                              maxSize: Size(
+                                500,
+                                serveResult.maxHeight,
+                              ),
                             ),
                             UserServeVisualizer(
+                              key: ValueKey(
+                                  selectedPlayerServeResult.playerName),
                               points: selectedPlayerServeResult
                                   .completeInferenceList,
                               isReference: true,
+                              minSize: Size(selectedPlayerServeResult.minWidth,
+                                  selectedPlayerServeResult.minHeight),
+                              maxSize: Size(
+                                500,
+                                selectedPlayerServeResult.maxHeight,
+                              ),
                             ),
                           ],
                         ),
@@ -268,7 +254,7 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 15, 20, 5),
+                    padding: const EdgeInsets.fromLTRB(10, 5, 20, 5),
                     child: Text(
                       "Average Angles",
                       style: Theme.of(context).textTheme.titleLarge,
