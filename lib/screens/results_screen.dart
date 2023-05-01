@@ -28,31 +28,25 @@ class ResultsScreen extends ConsumerStatefulWidget {
 
 class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   bool isLoading = true;
-  double progressValue = 0;
   double videoDuration = 60.19;
   int numberOfImages = 0;
-  String outputPath = "";
+  late final String outputPath;
   late ServeResult serveResult;
-  late final ServeResult selectedPlayerServeResult;
+  int? selectedPlayerIndex;
 
   late final Classifier classifier;
   late final IsolateUtils isolate;
 
   @override
   void initState() {
+    super.initState();
+    Future.delayed(Duration.zero, () {
+      ref.read(userServeDataProvider.notifier).reset();
+      serveResult = ref.read(userServeDataProvider);
+    });
     initClassifier();
     getDuration();
     saveVideoInImages(File(widget.pickedVideo.path));
-    serveResult = ref.read(userServeDataProvider);
-    if (ref.read(userServeDataProvider).height < 180) {
-      selectedPlayerServeResult = fabioFognini;
-    } else if (ref.read(userServeDataProvider).height > 180 &&
-        ref.read(userServeDataProvider).isLeftHanded) {
-      selectedPlayerServeResult = rafaelNadal;
-    } else {
-      selectedPlayerServeResult = rogerFederer;
-    }
-    super.initState();
   }
 
   Future initClassifier() async {
@@ -86,15 +80,22 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   }
 
   Future<void> saveVideoInImages(File selectedVideo) async {
+    final Directory applicationDocumentsDir =
+        await getApplicationDocumentsDirectory();
+    outputPath = applicationDocumentsDir.path;
+    //delete old images
+    if (await applicationDocumentsDir.exists()) {
+      await applicationDocumentsDir.delete(recursive: true);
+      await applicationDocumentsDir.create();
+    }
     //delay to get duration
     await Future.delayed(const Duration(milliseconds: 500), () {});
-    outputPath = (await getTemporaryDirectory()).path;
-    String command =
+    final String command =
         "-i ${selectedVideo.path} -vf fps=20 $outputPath/image_%03d.jpg";
     FFmpegKit.executeAsync(command, (session) async {
       final returnCode = await session.getReturnCode();
       if (ReturnCode.isSuccess(returnCode)) {
-        debugPrint('Video successfuly split');
+        debugPrint('Video successfully split');
         numberOfImages = (videoDuration * 20).round();
         await createIsolates();
       } else {
@@ -126,23 +127,20 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
   }
 
   Future<List> inference(IsolateData isolateData) async {
-    ReceivePort responsePort = ReceivePort();
+    final ReceivePort responsePort = ReceivePort();
     isolate.sendPort.send(isolateData..responsePort = responsePort.sendPort);
-    var results = await responsePort.first;
+    final results = await responsePort.first;
     return results;
   }
 
   Future createIsolates() async {
-    setState(() {
-      isLoading = true;
-    });
-    image_lib.Image tmpImage;
     for (int i = 0; i < numberOfImages; i++) {
-      tmpImage = image_lib.decodeJpg(File(imagePath(i + 1)).readAsBytesSync())!;
-      var isolateData = IsolateData(tmpImage, classifier.interpreter.address);
-      List inferenceResults = await inference(isolateData);
+      final image_lib.Image tmpImage =
+          image_lib.decodeJpg(File(imagePath(i + 1)).readAsBytesSync())!;
+      final isolateData = IsolateData(tmpImage, classifier.interpreter.address);
+      final List inferenceResults = await inference(isolateData);
       serveResult.addInferenceFromFrame(inferenceResults);
-      // print(inferenceResults); ///use this to get inference for players
+      // print(inferenceResults); ///use this to get serve results for reference players
     }
     setState(() {
       isLoading = false;
@@ -151,67 +149,66 @@ class _ResultsScreenState extends ConsumerState<ResultsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final ServeResult selectedPlayerServeResult =
+        ref.watch(selectedPlayerProvider(selectedPlayerIndex));
     return Scaffold(
       appBar: AppBar(
         title: const Text("Serve Analysis Result"),
-        // actions: [
-        //   if (!isLoading)
-        //     IconButton(
-        //       onPressed: () async {
-        //         await showDialog(
-        //           context: context,
-        //           builder: (context) =>
-        //               StatefulBuilder(builder: (context, setState) {
-        //             return AlertDialog(
-        //               title: const Text("Change Reference Player"),
-        //               content: Column(
-        //                 mainAxisSize: MainAxisSize.min,
-        //                 children: [
-        //                   RadioListTile(
-        //                     title: const Text("Roger Federer"),
-        //                     value: 0,
-        //                     groupValue: ref.watch(selectedPlayerServeResultProvider),
-        //                     onChanged: (val) {
-        //                       ref.read(selectedPlayerServeResultProvider.notifier).state =
-        //                           val ?? 0;
-        //                       setState(() {});
-        //                     },
-        //                   ),
-        //                   RadioListTile(
-        //                     title: const Text("Rafael Nadel"),
-        //                     value: 1,
-        //                     groupValue: ref.watch(selectedPlayerServeResultProvider),
-        //                     onChanged: (val) {
-        //                       ref.read(selectedPlayerServeResultProvider.notifier).state =
-        //                           val ?? 1;
-        //                       setState(() {});
-        //                     },
-        //                   ),
-        //                   RadioListTile(
-        //                     title: const Text("Fabio Fognini"),
-        //                     value: 2,
-        //                     groupValue: ref.watch(selectedPlayerServeResultProvider),
-        //                     onChanged: (val) {
-        //                       ref.read(selectedPlayerServeResultProvider.notifier).state =
-        //                           val ?? 2;
-        //                       setState(() {});
-        //                     },
-        //                   ),
-        //                 ],
-        //               ),
-        //               actions: [
-        //                 TextButton(
-        //                   onPressed: () => Navigator.pop(context),
-        //                   child: const Text("Ok"),
-        //                 ),
-        //               ],
-        //             );
-        //           }),
-        //         );
-        //       },
-        //       icon: const Icon(Icons.change_circle),
-        //     )
-        // ],
+        actions: [
+          if (!isLoading)
+            IconButton(
+              onPressed: () async {
+                await showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text("Change Reference Player"),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        RadioListTile(
+                          title: const Text("Fabio Fognini"),
+                          value: 0,
+                          groupValue: selectedPlayerIndex,
+                          onChanged: (val) {
+                            selectedPlayerIndex = val ?? 2;
+                            setState(() {});
+                            Navigator.pop(context);
+                          },
+                        ),
+                        RadioListTile(
+                          title: const Text("Roger Federer"),
+                          value: 1,
+                          groupValue: selectedPlayerIndex,
+                          onChanged: (val) {
+                            selectedPlayerIndex = val ?? 0;
+                            setState(() {});
+                            Navigator.pop(context);
+                          },
+                        ),
+                        RadioListTile(
+                          title: const Text("Rafael Nadel"),
+                          value: 2,
+                          groupValue: selectedPlayerIndex,
+                          onChanged: (val) {
+                            selectedPlayerIndex = val ?? 1;
+                            setState(() {});
+                            Navigator.pop(context);
+                          },
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Ok"),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              icon: const Icon(Icons.change_circle),
+            )
+        ],
       ),
       body: (isLoading)
           ? const AnalysisLoadingWidget()

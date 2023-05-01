@@ -44,13 +44,6 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
     return widgetHeight - (marginBottom + marginTop + 13); //13 is the font size
   }
 
-  String heightInFeetAndInches() {
-    double heightInFeet = ref.read(userServeDataProvider).height *
-        0.032808399; //1cm = 0.032808399inches
-    double heightInRemainingInches = (heightInFeet - heightInFeet.floor()) * 12;
-    return "${heightInFeet.floor()}'${heightInRemainingInches.round()}\"";
-  }
-
   int _globalOffsetToHeight(Offset globalOffset) {
     RenderBox getBox = context.findRenderObject() as RenderBox;
     Offset localPosition = getBox.globalToLocal(globalOffset);
@@ -96,7 +89,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
                 bottom: 2,
               ),
               child: Text(
-                "${heightInFeetAndInches()} - ${ref.read(userServeDataProvider).height} cm",
+                "${ref.read(userServeDataProvider).heightInFeetAndInches()} / ${ref.read(userServeDataProvider).height} cm",
                 style: TextStyle(
                   fontSize: 14,
                   color: Theme.of(context).primaryColor,

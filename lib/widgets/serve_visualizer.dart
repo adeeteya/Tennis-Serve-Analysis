@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -15,39 +14,42 @@ class UserServeVisualizer extends StatefulWidget {
   State<UserServeVisualizer> createState() => _UserServeVisualizerState();
 }
 
-class _UserServeVisualizerState extends State<UserServeVisualizer> {
+class _UserServeVisualizerState extends State<UserServeVisualizer>
+    with SingleTickerProviderStateMixin {
   int userIndex = 0;
-  int referenceIndex = 0;
-  late final Timer visualizerTimer;
+  late final AnimationController _animationController;
 
   @override
   void initState() {
-    //50ms because 20frames per second
-    visualizerTimer = Timer.periodic(const Duration(milliseconds: 50), (timer) {
-      setState(() {
-        if (userIndex == widget.points.length - 1) {
-          userIndex = 0;
-        } else {
-          userIndex++;
-        }
-      });
-    });
+    //50ms because 20frames per second (Each image coordinate  persists for 50ms)
+    _animationController = AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: widget.points.length * 50),
+        upperBound: widget.points.length.toDouble())
+      ..repeat();
     super.initState();
   }
 
   @override
   void dispose() {
-    visualizerTimer.cancel();
+    _animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      willChange: true,
-      isComplex: true,
-      size: const Size(500, 500),
-      painter: RenderLandmarks(widget.points[userIndex], widget.isReference),
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, _) {
+        return CustomPaint(
+          willChange: true,
+          isComplex: true,
+          size: const Size(500, 500),
+          painter: RenderLandmarks(
+              widget.points[_animationController.value.toInt()],
+              widget.isReference),
+        );
+      },
     );
   }
 }
