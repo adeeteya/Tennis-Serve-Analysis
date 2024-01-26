@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 
 class AnalysisLoadingWidget extends StatelessWidget {
-  const AnalysisLoadingWidget({Key? key}) : super(key: key);
+  const AnalysisLoadingWidget({super.key});
 
   @override
   Widget build(BuildContext context) {

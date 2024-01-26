@@ -5,8 +5,9 @@ class ReferencePlayerCard extends StatelessWidget {
   final ServeResult referencePlayerResult;
   final bool isSelected;
   const ReferencePlayerCard(
-      {Key? key, required this.referencePlayerResult, this.isSelected = false})
-      : super(key: key);
+      {super.key,
+      required this.referencePlayerResult,
+      this.isSelected = false});
 
   @override
   Widget build(BuildContext context) {

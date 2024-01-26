@@ -5,8 +5,7 @@ import 'package:tennis_serve_analysis/widgets/reference_player_card.dart';
 class ChangeReferencePlayerScreen extends StatefulWidget {
   final int selectedPlayerIndex;
   const ChangeReferencePlayerScreen(
-      {Key? key, required this.selectedPlayerIndex})
-      : super(key: key);
+      {super.key, required this.selectedPlayerIndex});
 
   @override
   State<ChangeReferencePlayerScreen> createState() =>

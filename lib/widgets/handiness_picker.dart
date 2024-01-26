@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:tennis_serve_analysis/controllers/user_controller.dart';
 
 class HandinessPicker extends StatelessWidget {
-  const HandinessPicker({Key? key}) : super(key: key);
+  const HandinessPicker({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -5,7 +5,7 @@ import 'package:tennis_serve_analysis/widgets/handiness_picker.dart';
 import 'package:tennis_serve_analysis/widgets/height_picker.dart';
 
 class Home extends StatelessWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   Future uploadVideo(BuildContext context) async {
     final ImagePicker picker = ImagePicker();

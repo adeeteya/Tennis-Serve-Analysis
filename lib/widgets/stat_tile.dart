@@ -6,12 +6,11 @@ class StatTile extends StatelessWidget {
   final double angle;
   final double? referenceAngle;
   const StatTile(
-      {Key? key,
+      {super.key,
       required this.assetPath,
       required this.statTitle,
       required this.angle,
-      this.referenceAngle})
-      : super(key: key);
+      this.referenceAngle});
 
   @override
   Widget build(BuildContext context) {

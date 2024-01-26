@@ -9,10 +9,10 @@ class HeightPicker extends ConsumerStatefulWidget {
   final int maxHeight;
   int get totalUnits => maxHeight - minHeight;
   const HeightPicker({
-    Key? key,
+    super.key,
     this.minHeight = 155,
     this.maxHeight = 210,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState createState() => _HeightPickerState();
@@ -182,12 +182,12 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.end,
-                children: const [
+                children: [
                   Text(
                     "HEIGHT",
                     style: TextStyle(

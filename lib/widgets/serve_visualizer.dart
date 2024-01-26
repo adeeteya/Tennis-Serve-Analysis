@@ -7,12 +7,12 @@ class UserServeVisualizer extends StatefulWidget {
   final Size minSize;
   final Size maxSize;
   const UserServeVisualizer({
-    Key? key,
+    super.key,
     required this.points,
     this.isReference = false,
     this.minSize = Size.zero,
     this.maxSize = Size.infinite,
-  }) : super(key: key);
+  });
 
   @override
   State<UserServeVisualizer> createState() => _UserServeVisualizerState();

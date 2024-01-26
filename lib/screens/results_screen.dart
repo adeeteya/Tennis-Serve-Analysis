@@ -23,7 +23,7 @@ import 'package:tennis_serve_analysis/widgets/serve_visualizer.dart';
 
 class ResultsScreen extends ConsumerStatefulWidget {
   final XFile pickedVideo;
-  const ResultsScreen({Key? key, required this.pickedVideo}) : super(key: key);
+  const ResultsScreen({super.key, required this.pickedVideo});
 
   @override
   ConsumerState createState() => _ResultsScreenState();
