@@ -6,6 +6,10 @@ Please star⭐ the repo if you like what you see😊.
 
 ## 💻 Installation links
 
+[<img alt='Get it on Google Play' src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" width="250">](https://play.google.com/store/apps/details?id=com.adeeteya.tennis_serve_analysis)
+
+(or)
+
 [![Download apk](https://img.shields.io/badge/Download-apk-green)](https://github.com/adityar224/Tennis-Serve-Analysis/releases/download/1.0.0/Tennis-Serve-Analysis-android-1.0.0.apk)
 
 ## 📖 Usage
