@@ -10,7 +10,7 @@ Please star⭐ the repo if you like what you see😊.
 
 (or)
 
-[![Download apk](https://img.shields.io/badge/Download-apk-green)](https://github.com/adityar224/Tennis-Serve-Analysis/releases/download/1.0.0/Tennis-Serve-Analysis-android-1.0.0.apk)
+[![Download apk](https://img.shields.io/badge/Download-apk-green)](https://github.com/adeeteya/Tennis-Serve-Analysis/releases/download/1.0.0/Tennis-Serve-Analysis-android-1.0.0.apk)
 
 ## 📖 Usage
 
@@ -57,11 +57,11 @@ Please star⭐ the repo if you like what you see😊.
 
 ## 🤓 Author
 
-**[Aditya R](https://github.com/adityar224)**
+**[Aditya R](https://github.com/adeeteya)**
 
 ## 🔖 LICENCE
 Copyright (c) 2024 Aditya R
-[GNU GPLv3 LICENCE](https://github.com/adityar224/Tennis-Serve-Analysis/blob/master/LICENSE)
+[GNU GPLv3 LICENCE](https://github.com/adeeteya/Tennis-Serve-Analysis/blob/master/LICENSE)
 
 ## 🙏 Attributions
 <a href="https://www.flaticon.com/free-icons/tennis" title="tennis icons">Tennis icons created by kerismaker - Flaticon</a>
