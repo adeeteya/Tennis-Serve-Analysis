@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -16,55 +17,61 @@ class _PreviewScreenState extends State<PreviewScreen>
     with SingleTickerProviderStateMixin {
   late final AnimationController _animationController;
   late final VideoPlayerController _videoPlayerController;
-  bool isPlaying = false;
-  double playbackSpeed = 0.5;
+  bool _isPlaying = false;
+  double _playbackSpeed = 0.5;
 
   @override
   void initState() {
     _animationController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 300));
-    _videoPlayerController =
-        VideoPlayerController.file(File(widget.pickedVideo.path))
-          ..initialize().then((_) {
-            setState(() {});
-            _videoPlayerController.setLooping(true);
-            _videoPlayerController.setPlaybackSpeed(0.5);
-          });
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _videoPlayerController = VideoPlayerController.file(
+      File(widget.pickedVideo.path),
+    );
+    unawaited(_initializeVideoPlayer());
     super.initState();
+  }
+
+  Future<void> _initializeVideoPlayer() async {
+    await _videoPlayerController.initialize();
+    await _videoPlayerController.setLooping(true);
+    await _videoPlayerController.setPlaybackSpeed(0.5);
+    setState(() {});
   }
 
   @override
   void dispose() {
     _animationController.dispose();
-    _videoPlayerController.dispose();
+    unawaited(_videoPlayerController.dispose());
     super.dispose();
   }
 
-  void togglePlayback() {
-    if (isPlaying) {
+  Future<void> _togglePlayback() async {
+    if (_isPlaying) {
       setState(() {
-        isPlaying = false;
+        _isPlaying = false;
       });
-      _videoPlayerController.pause();
+      await _videoPlayerController.pause();
     } else {
       setState(() {
-        isPlaying = true;
+        _isPlaying = true;
       });
-      _videoPlayerController.play();
+      await _videoPlayerController.play();
     }
   }
 
-  Widget playBackSpeedButton(String speedString) {
-    double newSpeed = double.parse(speedString);
+  Widget _playBackSpeedButton(String speedString) {
+    final double newSpeed = double.parse(speedString);
     return FloatingActionButton(
       heroTag: "${speedString}x Button",
       tooltip: "${speedString}x Speed",
-      onPressed: () {
+      onPressed: () async {
         setState(() {
-          playbackSpeed = newSpeed;
+          _playbackSpeed = newSpeed;
         });
-        _videoPlayerController.setPlaybackSpeed(newSpeed);
-        _animationController.reverse();
+        await _videoPlayerController.setPlaybackSpeed(newSpeed);
+        await _animationController.reverse();
       },
       child: Text("${speedString}x"),
     );
@@ -78,11 +85,12 @@ class _PreviewScreenState extends State<PreviewScreen>
         actions: [
           IconButton(
             tooltip: "Continue",
-            onPressed: () {
-              Navigator.of(context).pushReplacement(
+            onPressed: () async {
+              await Navigator.of(context).pushReplacement(
                 MaterialPageRoute(
-                  builder: (context) =>
-                      ResultsScreen(pickedVideo: widget.pickedVideo),
+                  builder:
+                      (context) =>
+                          ResultsScreen(pickedVideo: widget.pickedVideo),
                 ),
               );
             },
@@ -92,16 +100,20 @@ class _PreviewScreenState extends State<PreviewScreen>
       ),
       floatingActionButton: FloatingActionButton(
         heroTag: "Playback Button",
-        tooltip: (isPlaying) ? "Pause" : "Play",
-        onPressed: togglePlayback,
-        child: Icon((isPlaying) ? Icons.pause : Icons.play_arrow),
+        tooltip: _isPlaying ? "Pause" : "Play",
+        onPressed: _togglePlayback,
+        child: Icon(_isPlaying ? Icons.pause : Icons.play_arrow),
       ),
       body: Stack(
         children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: _videoPlayerController.value.aspectRatio,
-              child: VideoPlayer(_videoPlayerController),
+          SizedBox.expand(
+            child: FittedBox(
+              fit: BoxFit.cover,
+              child: SizedBox(
+                width: _videoPlayerController.value.size.width,
+                height: _videoPlayerController.value.size.height,
+                child: VideoPlayer(_videoPlayerController),
+              ),
             ),
           ),
           Flow(
@@ -120,13 +132,18 @@ class _PreviewScreenState extends State<PreviewScreen>
                   }
                 },
                 child: Text(
-                    "${(playbackSpeed == 1) ? "1" : (playbackSpeed == 1.5 || playbackSpeed == 0.5) ? playbackSpeed.toStringAsFixed(1) : playbackSpeed.toStringAsFixed(2)}x"),
+                  "${(_playbackSpeed == 1)
+                      ? "1"
+                      : (_playbackSpeed == 1.5 || _playbackSpeed == 0.5)
+                      ? _playbackSpeed.toStringAsFixed(1)
+                      : _playbackSpeed.toStringAsFixed(2)}x",
+                ),
               ),
-              playBackSpeedButton("1.5"),
-              playBackSpeedButton("1"),
-              playBackSpeedButton("0.75"),
-              playBackSpeedButton("0.5"),
-              playBackSpeedButton("0.25"),
+              _playBackSpeedButton("1.5"),
+              _playBackSpeedButton("1"),
+              _playBackSpeedButton("0.75"),
+              _playBackSpeedButton("0.5"),
+              _playBackSpeedButton("0.25"),
             ],
           ),
         ],
@@ -149,11 +166,7 @@ class ColumnMenuFlowDelegate extends FlowDelegate {
       final dy = yStart - childYPosition * controller.value;
       context.paintChild(
         i,
-        transform: Matrix4.translationValues(
-          margin,
-          dy,
-          -10,
-        ),
+        transform: Matrix4.translationValues(margin, dy, -10),
       );
     }
   }

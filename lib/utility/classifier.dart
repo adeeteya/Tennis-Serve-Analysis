@@ -23,7 +23,8 @@ class Classifier {
 
   void printDebugData() {
     debugPrint(
-        "Frame: $frameNo type: ${inputImage.dataType} height: ${inputImage.height} width: ${inputImage.width}");
+      "Frame: $frameNo type: ${inputImage.dataType} height: ${inputImage.height} width: ${inputImage.width}",
+    );
     // printWrapped(parseLandmarkData().toString());
   }
 
@@ -38,7 +39,7 @@ class Classifier {
     //   image = image_lib.copyRotate(image, 270);
     //   image = image_lib.flipHorizontal(image);
     // }
-    inputImage = TensorImage(TfLiteType.float32);
+    inputImage = TensorImage();
     inputImage.loadImage(image);
     inputImage = getProcessedImage();
     inputs = [inputImage.buffer];
@@ -46,10 +47,11 @@ class Classifier {
 
   TensorImage getProcessedImage() {
     int padSize = max(inputImage.height, inputImage.width);
-    imageProcessor = ImageProcessorBuilder()
-        .add(ResizeWithCropOrPadOp(padSize, padSize))
-        .add(ResizeOp(256, 256, ResizeMethod.BILINEAR))
-        .build();
+    imageProcessor =
+        ImageProcessorBuilder()
+            .add(ResizeWithCropOrPadOp(padSize, padSize))
+            .add(ResizeOp(256, 256, ResizeMethod.BILINEAR))
+            .build();
 
     inputImage = imageProcessor.process(inputImage);
     return inputImage;
@@ -62,9 +64,10 @@ class Classifier {
 
   Future loadModel({Interpreter? interpreter}) async {
     try {
-      _interpreter = interpreter ??
+      _interpreter =
+          interpreter ??
           await Interpreter.fromAsset(
-            "models/movenet.tflite",
+            "assets/models/movenet.tflite",
             options: InterpreterOptions()..threads = 4,
           );
     } catch (e) {

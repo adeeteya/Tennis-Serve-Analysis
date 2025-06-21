@@ -9,8 +9,10 @@ class InferencePoint {
   InferencePoint(this.point, this.confidence);
   factory InferencePoint.fromList(List inferenceList) {
     return InferencePoint(
-      Offset((inferenceList[0] as int).toDouble(),
-          (inferenceList[1] as int).toDouble()),
+      Offset(
+        (inferenceList[0] as int).toDouble(),
+        (inferenceList[1] as int).toDouble(),
+      ),
       inferenceList[2],
     );
   }
@@ -55,16 +57,24 @@ class ServeResult {
   final List<InferencePoint> leftAnklePoints = [];
   final List<InferencePoint> rightAnklePoints = [];
 
-  ServeResult(this.playerName, this.height, this.isLeftHanded,
-      {this.playerPhotoAssetPath});
+  ServeResult(
+    this.playerName,
+    this.height,
+    this.isLeftHanded, {
+    this.playerPhotoAssetPath,
+  });
 
   ServeResult copyWith({String? playerName, int? height, bool? isLeftHanded}) {
-    return ServeResult(playerName ?? this.playerName, height ?? this.height,
-        isLeftHanded ?? this.isLeftHanded);
+    return ServeResult(
+      playerName ?? this.playerName,
+      height ?? this.height,
+      isLeftHanded ?? this.isLeftHanded,
+    );
   }
 
   double getAngle(Offset pointA, Offset pointB, Offset pointC) {
-    double radians = atan2(pointC.dy - pointB.dy, pointC.dx - pointB.dx) -
+    final double radians =
+        atan2(pointC.dy - pointB.dy, pointC.dx - pointB.dx) -
         atan2(pointA.dy - pointB.dy, pointA.dx - pointB.dx);
     double angle = (radians * 180 / pi).abs();
 
@@ -96,63 +106,80 @@ class ServeResult {
   double get minRightElbowAngle => rightElbowAngles.min;
 
   List get completeInferenceList => [
-        for (int i = 0; i < nosePoints.length; i++)
-          [
-            nosePoints[i].toList(),
-            leftEyePoints[i].toList(),
-            rightEyePoints[i].toList(),
-            leftEarPoints[i].toList(),
-            rightEarPoints[i].toList(),
-            leftShoulderPoints[i].toList(),
-            rightShoulderPoints[i].toList(),
-            leftElbowPoints[i].toList(),
-            rightElbowPoints[i].toList(),
-            leftWristPoints[i].toList(),
-            rightWristPoints[i].toList(),
-            leftHipPoints[i].toList(),
-            rightHipPoints[i].toList(),
-            leftKneePoints[i].toList(),
-            rightKneePoints[i].toList(),
-            leftAnklePoints[i].toList(),
-            rightAnklePoints[i].toList(),
-          ]
-      ];
+    for (int i = 0; i < nosePoints.length; i++)
+      [
+        nosePoints[i].toList(),
+        leftEyePoints[i].toList(),
+        rightEyePoints[i].toList(),
+        leftEarPoints[i].toList(),
+        rightEarPoints[i].toList(),
+        leftShoulderPoints[i].toList(),
+        rightShoulderPoints[i].toList(),
+        leftElbowPoints[i].toList(),
+        rightElbowPoints[i].toList(),
+        leftWristPoints[i].toList(),
+        rightWristPoints[i].toList(),
+        leftHipPoints[i].toList(),
+        rightHipPoints[i].toList(),
+        leftKneePoints[i].toList(),
+        rightKneePoints[i].toList(),
+        leftAnklePoints[i].toList(),
+        rightAnklePoints[i].toList(),
+      ],
+  ];
 
   void addInferenceFromFrame(List inferenceFrameResult) {
-    final InferencePoint nosePoint =
-        InferencePoint.fromList(inferenceFrameResult[0]);
-    final InferencePoint leftEyePoint =
-        InferencePoint.fromList(inferenceFrameResult[1]);
-    final InferencePoint rightEyePoint =
-        InferencePoint.fromList(inferenceFrameResult[2]);
-    final InferencePoint leftEarPoint =
-        InferencePoint.fromList(inferenceFrameResult[3]);
-    final InferencePoint rightEarPoint =
-        InferencePoint.fromList(inferenceFrameResult[4]);
-    final InferencePoint leftShoulderPoint =
-        InferencePoint.fromList(inferenceFrameResult[5]);
-    final InferencePoint rightShoulderPoint =
-        InferencePoint.fromList(inferenceFrameResult[6]);
-    final InferencePoint leftElbowPoint =
-        InferencePoint.fromList(inferenceFrameResult[7]);
-    final InferencePoint rightElbowPoint =
-        InferencePoint.fromList(inferenceFrameResult[8]);
-    final InferencePoint leftWristPoint =
-        InferencePoint.fromList(inferenceFrameResult[9]);
-    final InferencePoint rightWristPoint =
-        InferencePoint.fromList(inferenceFrameResult[10]);
-    final InferencePoint leftHipPoint =
-        InferencePoint.fromList(inferenceFrameResult[11]);
-    final InferencePoint rightHipPoint =
-        InferencePoint.fromList(inferenceFrameResult[12]);
-    final InferencePoint leftKneePoint =
-        InferencePoint.fromList(inferenceFrameResult[13]);
-    final InferencePoint rightKneePoint =
-        InferencePoint.fromList(inferenceFrameResult[14]);
-    final InferencePoint leftAnklePoint =
-        InferencePoint.fromList(inferenceFrameResult[15]);
-    final InferencePoint rightAnklePoint =
-        InferencePoint.fromList(inferenceFrameResult[16]);
+    final InferencePoint nosePoint = InferencePoint.fromList(
+      inferenceFrameResult[0],
+    );
+    final InferencePoint leftEyePoint = InferencePoint.fromList(
+      inferenceFrameResult[1],
+    );
+    final InferencePoint rightEyePoint = InferencePoint.fromList(
+      inferenceFrameResult[2],
+    );
+    final InferencePoint leftEarPoint = InferencePoint.fromList(
+      inferenceFrameResult[3],
+    );
+    final InferencePoint rightEarPoint = InferencePoint.fromList(
+      inferenceFrameResult[4],
+    );
+    final InferencePoint leftShoulderPoint = InferencePoint.fromList(
+      inferenceFrameResult[5],
+    );
+    final InferencePoint rightShoulderPoint = InferencePoint.fromList(
+      inferenceFrameResult[6],
+    );
+    final InferencePoint leftElbowPoint = InferencePoint.fromList(
+      inferenceFrameResult[7],
+    );
+    final InferencePoint rightElbowPoint = InferencePoint.fromList(
+      inferenceFrameResult[8],
+    );
+    final InferencePoint leftWristPoint = InferencePoint.fromList(
+      inferenceFrameResult[9],
+    );
+    final InferencePoint rightWristPoint = InferencePoint.fromList(
+      inferenceFrameResult[10],
+    );
+    final InferencePoint leftHipPoint = InferencePoint.fromList(
+      inferenceFrameResult[11],
+    );
+    final InferencePoint rightHipPoint = InferencePoint.fromList(
+      inferenceFrameResult[12],
+    );
+    final InferencePoint leftKneePoint = InferencePoint.fromList(
+      inferenceFrameResult[13],
+    );
+    final InferencePoint rightKneePoint = InferencePoint.fromList(
+      inferenceFrameResult[14],
+    );
+    final InferencePoint leftAnklePoint = InferencePoint.fromList(
+      inferenceFrameResult[15],
+    );
+    final InferencePoint rightAnklePoint = InferencePoint.fromList(
+      inferenceFrameResult[16],
+    );
 
     nosePoints.add(nosePoint);
     leftEyePoints.add(leftEyePoint);
@@ -172,20 +199,46 @@ class ServeResult {
     leftAnklePoints.add(leftAnklePoint);
     rightAnklePoints.add(rightAnklePoint);
 
-    leftKneeAngles.add(getAngle(
-        leftHipPoint.point, leftKneePoint.point, leftAnklePoint.point));
-    leftElbowAngles.add(getAngle(
-        leftWristPoint.point, leftElbowPoint.point, leftShoulderPoint.point));
-    leftShoulderAngles.add(getAngle(
-        leftElbowPoint.point, leftShoulderPoint.point, leftHipPoint.point));
-    rightKneeAngles.add(getAngle(
-        rightHipPoint.point, rightKneePoint.point, rightAnklePoint.point));
-    rightElbowAngles.add(getAngle(rightWristPoint.point, rightElbowPoint.point,
-        rightShoulderPoint.point));
-    rightShoulderAngles.add(getAngle(
-        rightElbowPoint.point, rightShoulderPoint.point, rightHipPoint.point));
+    leftKneeAngles.add(
+      getAngle(leftHipPoint.point, leftKneePoint.point, leftAnklePoint.point),
+    );
+    leftElbowAngles.add(
+      getAngle(
+        leftWristPoint.point,
+        leftElbowPoint.point,
+        leftShoulderPoint.point,
+      ),
+    );
+    leftShoulderAngles.add(
+      getAngle(
+        leftElbowPoint.point,
+        leftShoulderPoint.point,
+        leftHipPoint.point,
+      ),
+    );
+    rightKneeAngles.add(
+      getAngle(
+        rightHipPoint.point,
+        rightKneePoint.point,
+        rightAnklePoint.point,
+      ),
+    );
+    rightElbowAngles.add(
+      getAngle(
+        rightWristPoint.point,
+        rightElbowPoint.point,
+        rightShoulderPoint.point,
+      ),
+    );
+    rightShoulderAngles.add(
+      getAngle(
+        rightElbowPoint.point,
+        rightShoulderPoint.point,
+        rightHipPoint.point,
+      ),
+    );
 
-    List<double> pointHeights = [
+    final List<double> pointHeights = [
       nosePoint.point.dy,
       leftEyePoint.point.dy,
       rightEyePoint.point.dy,
@@ -204,7 +257,7 @@ class ServeResult {
       leftAnklePoint.point.dy,
       rightAnklePoint.point.dy,
     ];
-    List<double> pointWidths = [
+    final List<double> pointWidths = [
       nosePoint.point.dx,
       leftEyePoint.point.dx,
       rightEyePoint.point.dx,
@@ -236,20 +289,26 @@ class ServeResult {
   }
 
   String heightInFeetAndInches() {
-    double heightInFeet = height * 0.032808399; //1cm = 0.032808399inches
-    double heightInRemainingInches = (heightInFeet - heightInFeet.floor()) * 12;
+    final double heightInFeet = height * 0.032808399; //1cm = 0.032808399inches
+    final double heightInRemainingInches =
+        (heightInFeet - heightInFeet.floor()) * 12;
     return "${heightInFeet.floor()}ft ${heightInRemainingInches.round()}in";
   }
 
   factory ServeResult.fromCompleteInferenceList(
-      String playerName,
-      int height,
-      bool isLeftHanded,
-      String imageAssetPath,
-      List completeExtractedInferenceList) {
-    ServeResult newServeResult = ServeResult(playerName, height, isLeftHanded,
-        playerPhotoAssetPath: imageAssetPath);
-    for (var inferenceList in completeExtractedInferenceList) {
+    String playerName,
+    int height,
+    bool isLeftHanded,
+    String imageAssetPath,
+    List completeExtractedInferenceList,
+  ) {
+    final ServeResult newServeResult = ServeResult(
+      playerName,
+      height,
+      isLeftHanded,
+      playerPhotoAssetPath: imageAssetPath,
+    );
+    for (final inferenceList in completeExtractedInferenceList) {
       newServeResult.addInferenceFromFrame(inferenceList);
     }
     return newServeResult;

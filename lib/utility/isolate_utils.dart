@@ -1,6 +1,6 @@
 import 'dart:isolate';
 import 'package:image/image.dart' as image_lib;
-import 'classifier.dart';
+import 'package:tennis_serve_analysis/utility/classifier.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class IsolateUtils {
@@ -22,13 +22,19 @@ class IsolateUtils {
     _sendPort = await _receivePort.first;
   }
 
+  Future<void> stop() async {
+    _receivePort.close();
+    _isolate.kill(priority: Isolate.immediate);
+  }
+
   static void entryPoint(SendPort sendPort) async {
     final port = ReceivePort();
     sendPort.send(port.sendPort);
 
     await for (final IsolateData isolateData in port) {
       Classifier classifier = Classifier(
-          interpreter: Interpreter.fromAddress(isolateData.interpreterAddress));
+        interpreter: Interpreter.fromAddress(isolateData.interpreterAddress),
+      );
       classifier.performOperations(isolateData.imageData);
       classifier.runModel();
       List<dynamic> results = classifier.parseLandmarkData();

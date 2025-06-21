@@ -1,6 +1,7 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'dart:math' as math;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:tennis_serve_analysis/controllers/user_controller.dart';
 
@@ -8,11 +9,7 @@ class HeightPicker extends ConsumerStatefulWidget {
   final int minHeight;
   final int maxHeight;
   int get totalUnits => maxHeight - minHeight;
-  const HeightPicker({
-    super.key,
-    this.minHeight = 155,
-    this.maxHeight = 210,
-  });
+  const HeightPicker({super.key, this.minHeight = 155, this.maxHeight = 210});
 
   @override
   ConsumerState createState() => _HeightPickerState();
@@ -32,24 +29,24 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
   }
 
   double get _sliderPosition {
-    double halfOfBottomLabel = 13 / 2; //13 is the font size
-    int unitsFromBottom =
+    const double halfOfBottomLabel = 13 / 2; //13 is the font size
+    final int unitsFromBottom =
         ref.read(userServeDataProvider).height - widget.minHeight;
     return halfOfBottomLabel + unitsFromBottom * _pixelsPerUnit;
   }
 
   double get _drawingHeight {
-    double marginBottom = 16;
-    double marginTop = 26;
+    const double marginBottom = 16;
+    const double marginTop = 26;
     return widgetHeight - (marginBottom + marginTop + 13); //13 is the font size
   }
 
   int _globalOffsetToHeight(Offset globalOffset) {
-    RenderBox getBox = context.findRenderObject() as RenderBox;
-    Offset localPosition = getBox.globalToLocal(globalOffset);
+    final RenderBox getBox = context.findRenderObject() as RenderBox;
+    final Offset localPosition = getBox.globalToLocal(globalOffset);
     double dy = localPosition.dy;
     dy = dy - 26 - 13 / 2;
-    int height = widget.maxHeight - (dy ~/ _pixelsPerUnit);
+    final int height = widget.maxHeight - (dy ~/ _pixelsPerUnit);
     return height;
   }
 
@@ -58,16 +55,19 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
   }
 
   void _onDragStart(DragStartDetails dragStartDetails) {
-    ref.read(userServeDataProvider.notifier).onHeightChanged(
-        _globalOffsetToHeight(dragStartDetails.globalPosition));
+    ref
+        .read(userServeDataProvider.notifier)
+        .onHeightChanged(
+          _globalOffsetToHeight(dragStartDetails.globalPosition),
+        );
     startDragYOffset = dragStartDetails.globalPosition.dy;
     startDragHeight = ref.read(userServeDataProvider).height;
   }
 
   void _onDragUpdate(DragUpdateDetails dragUpdateDetails) {
-    double currentYOffset = dragUpdateDetails.globalPosition.dy;
-    double verticalDifference = startDragYOffset - currentYOffset;
-    int diffHeight = verticalDifference ~/ _pixelsPerUnit;
+    final double currentYOffset = dragUpdateDetails.globalPosition.dy;
+    final double verticalDifference = startDragYOffset - currentYOffset;
+    final int diffHeight = verticalDifference ~/ _pixelsPerUnit;
     ref
         .read(userServeDataProvider.notifier)
         .onHeightChanged(_normalizeHeight(startDragHeight + diffHeight));
@@ -84,10 +84,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.only(
-                left: 4,
-                bottom: 2,
-              ),
+              padding: const EdgeInsets.only(left: 4, bottom: 2),
               child: Text(
                 "${ref.read(userServeDataProvider).heightInFeetAndInches()} / ${ref.read(userServeDataProvider).height} cm",
                 style: TextStyle(
@@ -128,29 +125,19 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
   }
 
   Widget _drawLabels() {
-    int labelsToDisplay = widget.totalUnits ~/ 5 + 1;
-    List<Widget> labels = List.generate(
-      labelsToDisplay,
-      (idx) {
-        return Text(
-          "${widget.maxHeight - 5 * idx}",
-          style: const TextStyle(
-            fontSize: 13,
-            color: Colors.grey,
-          ),
-        );
-      },
-    );
+    final int labelsToDisplay = widget.totalUnits ~/ 5 + 1;
+    final List<Widget> labels = List.generate(labelsToDisplay, (idx) {
+      return Text(
+        "${widget.maxHeight - 5 * idx}",
+        style: const TextStyle(fontSize: 13, color: Colors.grey),
+      );
+    });
 
     return Align(
       alignment: Alignment.centerRight,
       child: IgnorePointer(
         child: Padding(
-          padding: const EdgeInsets.only(
-            right: 12,
-            bottom: 16,
-            top: 26,
-          ),
+          padding: const EdgeInsets.only(right: 12, bottom: 16, top: 26),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: labels,
@@ -161,7 +148,7 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
   }
 
   Widget _drawPersonImage() {
-    double personImageHeight = _sliderPosition + 19;
+    final double personImageHeight = _sliderPosition + 19;
     return Align(
       alignment: Alignment.bottomCenter,
       child: AnimatedContainer(
@@ -180,7 +167,6 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
       child: Padding(
         padding: const EdgeInsets.only(top: 8),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -190,25 +176,16 @@ class _HeightPickerState extends ConsumerState<HeightPicker> {
                 children: [
                   Text(
                     "HEIGHT",
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w500),
                   ),
                   Text(
                     "(cm)",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
               ),
             ),
-            const Divider(
-              height: 0,
-              color: Colors.grey,
-            ),
+            const Divider(height: 0, color: Colors.grey),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 8),

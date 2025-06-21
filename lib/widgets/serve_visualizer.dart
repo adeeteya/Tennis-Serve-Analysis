@@ -28,10 +28,10 @@ class _UserServeVisualizerState extends State<UserServeVisualizer>
     super.initState();
     //50ms because 20frames per second (Each image coordinate  persists for 50ms)
     _animationController = AnimationController(
-        vsync: this,
-        duration: Duration(milliseconds: widget.points.length * 50),
-        upperBound: widget.points.length.toDouble())
-      ..repeat();
+      vsync: this,
+      duration: Duration(milliseconds: widget.points.length * 50),
+      upperBound: widget.points.length.toDouble(),
+    )..repeat();
   }
 
   @override
@@ -67,25 +67,29 @@ class RenderLandmarks extends CustomPainter {
 
   RenderLandmarks(this.inferenceList, this.isReference, this.minSize);
 
-  final greenPoint = Paint()
-    ..color = Colors.green
-    ..strokeCap = StrokeCap.round
-    ..strokeWidth = 8;
+  final greenPoint =
+      Paint()
+        ..color = Colors.green
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 8;
 
-  final greenEdge = Paint()
-    ..color = Colors.lightGreen
-    ..strokeWidth = 5;
+  final greenEdge =
+      Paint()
+        ..color = Colors.lightGreen
+        ..strokeWidth = 5;
 
   // Overlay Profile
 
-  final redPoint = Paint()
-    ..color = Colors.red
-    ..strokeCap = StrokeCap.round
-    ..strokeWidth = 8;
+  final redPoint =
+      Paint()
+        ..color = Colors.red
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = 8;
 
-  final redEdge = Paint()
-    ..color = Colors.red.shade300
-    ..strokeWidth = 5;
+  final redEdge =
+      Paint()
+        ..color = Colors.red.shade300
+        ..strokeWidth = 5;
 
   List<Offset> pointsGreen = [];
   List<Offset> pointsRed = [];
@@ -108,7 +112,7 @@ class RenderLandmarks extends CustomPainter {
     [11, 13], // left_hip to left_knee
     [13, 15], // left_knee to left_ankle
     [12, 14], // right_hip to right_knee
-    [14, 16] // right_knee to right_ankle
+    [14, 16], // right_knee to right_ankle
   ];
 
   @override
@@ -122,25 +126,36 @@ class RenderLandmarks extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 
   void renderEdge(Canvas canvas) {
-    for (List point in inferenceList) {
-      if ((point[2] > 0.20)) {
+    for (final List point in inferenceList) {
+      if (point[2] > 0.20) {
         if (isReference) {
-          pointsGreen.add(Offset(point[0].toDouble() - minSize.width + 40,
-              point[1].toDouble() - minSize.height));
+          pointsGreen.add(
+            Offset(
+              point[0].toDouble() - minSize.width + 40,
+              point[1].toDouble() - minSize.height,
+            ),
+          );
         } else {
-          pointsRed.add(Offset(point[0].toDouble() - minSize.width + 40,
-              point[1].toDouble() - minSize.height));
+          pointsRed.add(
+            Offset(
+              point[0].toDouble() - minSize.width + 40,
+              point[1].toDouble() - minSize.height,
+            ),
+          );
         }
       }
     }
 
-    for (List<int> edge in edges) {
-      double vertex1X = inferenceList[edge[0]][0] - minSize.width + 40;
-      double vertex1Y = inferenceList[edge[0]][1] - minSize.height;
-      double vertex2X = inferenceList[edge[1]][0] - minSize.width + 40;
-      double vertex2Y = inferenceList[edge[1]][1] - minSize.height;
-      canvas.drawLine(Offset(vertex1X, vertex1Y), Offset(vertex2X, vertex2Y),
-          (isReference) ? greenEdge : redEdge);
+    for (final List<int> edge in edges) {
+      final double vertex1X = inferenceList[edge[0]][0] - minSize.width + 40;
+      final double vertex1Y = inferenceList[edge[0]][1] - minSize.height;
+      final double vertex2X = inferenceList[edge[1]][0] - minSize.width + 40;
+      final double vertex2Y = inferenceList[edge[1]][1] - minSize.height;
+      canvas.drawLine(
+        Offset(vertex1X, vertex1Y),
+        Offset(vertex2X, vertex2Y),
+        isReference ? greenEdge : redEdge,
+      );
     }
   }
 }

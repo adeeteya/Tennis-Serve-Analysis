@@ -4,15 +4,16 @@ import 'package:tennis_serve_analysis/models/serve_result.dart';
 class ReferencePlayerCard extends StatelessWidget {
   final ServeResult referencePlayerResult;
   final bool isSelected;
-  const ReferencePlayerCard(
-      {super.key,
-      required this.referencePlayerResult,
-      this.isSelected = false});
+  const ReferencePlayerCard({
+    super.key,
+    required this.referencePlayerResult,
+    this.isSelected = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      color: (isSelected) ? Colors.green.shade100 : null,
+      color: isSelected ? Colors.green.shade100 : null,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
         child: Row(
@@ -44,12 +45,14 @@ class ReferencePlayerCard extends StatelessWidget {
                       const Spacer(),
                       const Icon(Icons.sports_tennis),
                       const SizedBox(width: 4),
-                      Text(referencePlayerResult.isLeftHanded
-                          ? "Left Handed"
-                          : "Right Handed"),
+                      Text(
+                        referencePlayerResult.isLeftHanded
+                            ? "Left Handed"
+                            : "Right Handed",
+                      ),
                       const SizedBox(width: 4),
                     ],
-                  )
+                  ),
                 ],
               ),
             ),

@@ -3,39 +3,35 @@ description: A App to Analyze a Player's Tennis Serve
 
 publish_to: 'none'
 
-version: 1.0.1+2
+version: 1.2.0+3
 
 environment:
-  sdk: '>=3.2.3 <4.0.0'
+  sdk: ^3.7.0
+  flutter: 3.32.4
 
 dependencies:
+  collection: ^1.19.1
+  ffmpeg_kit_flutter_new: ^2.0.0
   flutter:
     sdk: flutter
-
-  image_picker: ^1.0.5
-  video_player: ^2.8.1
-  ffmpeg_kit_flutter: ^6.0.3
-  path_provider: ^2.0.15
-  image: ^3.0.2
-  tflite_flutter: ^0.9.0
+  flutter_riverpod: ^2.6.1
+  flutter_svg: ^2.2.0
+  image: ^4.5.4
+  image_picker: ^1.1.2
+  lottie: ^3.3.1
+  path_provider: ^2.1.5
+  tflite_flutter: ^0.11.0
   tflite_flutter_helper:
     git:
-      url: https://github.com/filofan1/tflite_flutter_helper.git
-      ref: 783f15e5a87126159147d8ea30b98eea9207ac70
-  lottie: ^2.7.0
-  flutter_svg: ^2.0.9
-  flutter_riverpod: ^2.4.9
-  collection: ^1.18.0
-
+      url: https://github.com/adeeteya/tflite_flutter_helper.git
+  video_player: ^2.10.0
 
 dev_dependencies:
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 
-  flutter_lints: ^3.0.1
-
 flutter:
-
   uses-material-design: true
 
   assets:
